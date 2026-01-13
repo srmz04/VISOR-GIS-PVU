@@ -81,7 +81,7 @@ El proyecto se comparte públicamente con la esperanza de que pueda ser útil a 
 
 ### Filosofía
 
-- **Open Source:** El código es libre y abierto bajo licencia MIT
+- **Open Source:** El código es libre y abierto bajo licencia Apache 2.0
 - **Atribución:** Si utilizas este proyecto, se agradece mención al autor
 - **Comunidad:** Las contribuciones y mejoras son bienvenidas
 - **Transparencia:** El desarrollo es público y documentado
