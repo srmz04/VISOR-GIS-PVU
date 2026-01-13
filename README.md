@@ -41,8 +41,8 @@ Sistema WebGIS para visualización y análisis de responsabilidades de vacunaci�
 
 ```bash
 # Clonar repositorio
-git clone https://github.com/TU_USUARIO/pvu-webgis.git
-cd pvu-webgis
+git clone https://github.com/srmz04/VISOR-GIS-PVU.git
+cd VISOR-GIS-PVU
 
 # Iniciar servidor local
 cd web
@@ -115,7 +115,7 @@ Este proyecto está bajo la Licencia Apache 2.0. Ver [LICENSE](LICENSE) para má
 **Dr. Silvano Ramírez Soto**
 
 - Email: s.ramirez.s@gmail.com
-- GitHub: [@TU_USUARIO](https://github.com/TU_USUARIO)
+- GitHub: [@srmz04](https://github.com/srmz04)
 
 ---
 

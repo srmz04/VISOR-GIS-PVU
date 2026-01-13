@@ -48,8 +48,8 @@ Para enviar cambios al código:
 
 ```bash
 # 1. Clonar tu fork
-git clone https://github.com/TU_USUARIO/pvu-webgis.git
-cd pvu-webgis
+git clone https://github.com/srmz04/VISOR-GIS-PVU.git
+cd VISOR-GIS-PVU
 
 # 2. Crear rama
 git checkout -b feature/mi-mejora
