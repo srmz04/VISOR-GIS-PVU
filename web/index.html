@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PVU - Visor de Microregionalización</title>
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.0.6/dist/pmtiles.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=4.0.2">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-brand">
+            <div class="logo"></div>
+            <div class="header-text">
+                <h1>Visor de Microregionalización</h1>
+                <span class="subtitle">Programa de Vacunación Universal - Durango</span>
+            </div>
+        </div>
+        <button class="menu-toggle" id="menuBtn" aria-label="Abrir menú">
+            <span></span><span></span><span></span>
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <!-- Search -->
+            <div class="search-section">
+                <label for="searchInput">Buscar localidad</label>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Ej: Durango, Mezquital...">
+                    <button id="searchBtn" aria-label="Buscar">🔍</button>
+                </div>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+
+            <!-- Global Controls -->
+            <div class="control-section">
+                <div class="toggle-switch-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="globalLabelToggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="toggle-label">Mostrar Etiquetas</span>
+                </div>
+            </div>
+
+
+            <!-- Layer Controls -->
+            <div class="layers-section">
+                <h3>Capas Visibles</h3>
+                <div id="layerControls">
+                    <!-- Dynamic layer controls will be inserted here -->
+                </div>
+
+                <!-- Opacity Control -->
+                <div class="opacity-control">
+                    <label for="opacitySlider">Opacidad: <span id="opacityValue">80</span>%</label>
+                    <input type="range" id="opacitySlider" min="10" max="100" value="80" step="5">
+                </div>
+            </div>
+
+            <!-- Legend (dynamic) -->
+            <div class="legend-section">
+                <h3>Leyenda</h3>
+                <div id="legend" class="legend-content">
+                    <p class="legend-empty">Activa capas para ver la leyenda</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Map Container -->
+    <main class="map-container">
+        <div id="map"></div>
+
+        <!-- Current Mode Indicator -->
+        <div class="mode-indicator" id="modeIndicator">
+            <span id="currentModeName">Microregionalización Urbana</span>
+        </div>
+
+        <!-- Map Controls -->
+        <div class="map-controls">
+            <button id="locateBtn" class="control-btn" title="Mi ubicación">📍</button>
+            <button id="zoomInBtn" class="control-btn" title="Acercar">+</button>
+            <button id="zoomOutBtn" class="control-btn" title="Alejar">−</button>
+            <button id="resetView" class="control-btn" title="Vista inicial">🏠</button>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel" id="infoPanel">
+            <button class="info-close" id="closeInfo">×</button>
+            <h3 class="info-title">Información</h3>
+            <div class="info-content">
+                <p class="info-hint">Haz clic en el mapa para ver información.</p>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <span>Cargando mapa...</span>
+        </div>
+    </main>
+
+    <!-- Footer (Reserved for future use) -->
+    <footer class="footer" style="display: none;">
+    </footer>
+
+    <script src="logger.js?v=4.1.0"></script>
+    <script src="config.js?v=4.1.0"></script>
+    <script src="app.js?v=4.1.0"></script>
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+# ============================================
+# PVU WebGIS - Git Ignore Configuration
+# ============================================
+
+# Carpetas de archivo (no son parte del proyecto activo)
+_archive/
+_geodata/
+_confidential/
+
+# Cache de desarrollo
+.wrangler/
+node_modules/
+
+# Archivos de respaldo
+*.bak
+*.pre_*
+*.stroke.bak
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+dist/
+build/
+
+# Archivos temporales de QGIS
+*.qgs~
+*.qgz~
