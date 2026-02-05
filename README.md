@@ -75,13 +75,13 @@ pvu-webgis/
 
 ## Sobre Este Proyecto
 
-Este sistema fue desarrollado de manera personal, en tiempo libre, como ejercicio práctico para aplicar conocimientos adquiridos en cursos de desarrollo web, GIS y visualización de datos.
+Este sistema fue desarrollado como ejercicio práctico para aplicar conocimientos adquiridos en cursos de desarrollo web, GIS y visualización de datos.
 
 El proyecto se comparte públicamente con la esperanza de que pueda ser útil a otras personas u organizaciones con necesidades similares de visualización geoespacial en el sector salud.
 
 ### Filosofía
 
-- **Open Source:** El código es libre y abierto bajo licencia MIT
+- **Open Source:** El código es libre y abierto bajo licencia Apache 2.0
 - **Atribución:** Si utilizas este proyecto, se agradece mención al autor
 - **Comunidad:** Las contribuciones y mejoras son bienvenidas
 - **Transparencia:** El desarrollo es público y documentado
