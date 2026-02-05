@@ -75,7 +75,7 @@ pvu-webgis/
 
 ## Sobre Este Proyecto
 
-Este sistema fue desarrollado como ejercicio práctico para aplicar conocimientos adquiridos en cursos de desarrollo web, GIS y visualización de datos.
+Este sistema fue desarrollado como ejercicio práctico para aplicar conocimientos adquiridos en cursos de desarrollo web, GIS y visualización de datos, en el marco del **Proyecto de Microregionalización de Servicios de Vacunación en el Estado de Durango**, realizado en colaboración con los Servicios de Salud de Durango, INEGI y la Universidad Juárez del Estado de Durango.
 
 El proyecto se comparte públicamente con la esperanza de que pueda ser útil a otras personas u organizaciones con necesidades similares de visualización geoespacial en el sector salud.
 
@@ -121,5 +121,5 @@ Este proyecto está bajo la Licencia Apache 2.0. Ver [LICENSE](LICENSE) para má
 
 ## Agradecimientos
 
-- Datos geográficos: INEGI (Marco Geoestadístico Nacional)
+- Datos geográficos y asesoría técnica: INEGI (Marco Geoestadístico Nacional)
 - Inspiración: La necesidad de herramientas accesibles para el sector salud público
