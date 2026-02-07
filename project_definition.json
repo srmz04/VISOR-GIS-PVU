@@ -1,0 +1,135 @@
+{
+    "project_meta": {
+        "name": "VISOR-GIS-PVU-HONO",
+        "description": "Migración de VISOR-GIS-PVU a arquitectura agnóstica de nube usando Hono framework",
+        "version": "2.0.0-alpha",
+        "license": "Apache-2.0",
+        "author": "Dr. Silvano Ramírez Soto (@srmz04)",
+        "repository": "https://github.com/srmz04/VISOR-GIS-PVU",
+        "last_updated": "2026-02-07T11:40:00-06:00"
+    },
+    "context": {
+        "current_stack": {
+            "frontend": "MapLibre GL JS (Cloudflare Pages)",
+            "backend": "Cloudflare Workers (Service Worker syntax)",
+            "storage": "Cloudflare R2 (S3-compatible)",
+            "data_format": "PMTiles v3",
+            "pain_points": [
+                "Vendor lock-in (Cloudflare ecosystem)",
+                "Difficult local testing (miniflare dependencies)",
+                "Tied to R2Bucket API"
+            ]
+        },
+        "migration_goals": {
+            "primary": "Eliminar vendor lock-in manteniendo performance",
+            "framework": "Hono (Standards-based Web Framework)",
+            "architecture": "Hexagonal / Clean Architecture (Separation of Storage Interface)",
+            "runtime_targets": [
+                "Cloudflare Workers",
+                "Bun (Self-hosted)",
+                "Deno",
+                "Node.js"
+            ]
+        }
+    },
+    "architecture": {
+        "pattern": "Hybrid Storage Adapter",
+        "components": {
+            "core": "Hono Application",
+            "interfaces": {
+                "StorageAdapter": {
+                    "methods": [
+                        "getBytes(key: string, offset: number, length: number): Promise<ArrayBuffer>",
+                        "head(key: string): Promise<{ size: number, etag: string } | null>"
+                    ]
+                }
+            },
+            "implementations": {
+                "R2Adapter": "Wrapper for Cloudflare R2Bucket",
+                "S3Adapter": "Wrapper for AWS SDK v3 S3Client (Minio/AWS)",
+                "FileSystemAdapter": "Wrapper for Node/Bun fs/promises"
+            }
+        }
+    },
+    "directory_structure": {
+        "root": "./",
+        "files": [
+            "wrangler.toml",
+            "package.json",
+            "tsconfig.json"
+        ],
+        "src": {
+            "index.ts": "Entry point (Hono app definition)",
+            "server.ts": "Bun/Node server entry point (if self-hosted)",
+            "worker.ts": "Cloudflare Worker entry point",
+            "routes": {
+                "tiles.ts": "GET /tiles/:z/:x/:y.pbf",
+                "metadata.ts": "GET /metadata",
+                "pmtiles.ts": "GET /:key.pmtiles (Range support)"
+            },
+            "adapters": {
+                "storage.interface.ts": "Interface definition",
+                "r2.adapter.ts": "Cloudflare implementation",
+                "s3.adapter.ts": "S3 implementation",
+                "fs.adapter.ts": "Filesystem implementation"
+            },
+            "lib": {
+                "pmtiles.ts": "PMTiles logic (independent of storage)"
+            }
+        },
+        "test": {
+            "mocks": {
+                "storage.mock.ts": "Memory storage for testing"
+            }
+        }
+    },
+    "technical_requirements": {
+        "dependencies": {
+            "production": [
+                "hono",
+                "pmtiles"
+            ],
+            "dev": [
+                "@cloudflare/workers-types",
+                "wrangler",
+                "bun-types",
+                "typescript"
+            ],
+            "optional": [
+                "@aws-sdk/client-s3"
+            ]
+        },
+        "performance_constraints": {
+            "latency": "< 50ms for tile requests",
+            "range_requests": "Must support HTTP Range header",
+            "caching": "ETag + Cache-Control immutability"
+        }
+    },
+    "roadmap": {
+        "phase_1": {
+            "name": "Core Migration",
+            "tasks": [
+                "Init Hono project",
+                "Define StorageAdapter interface",
+                "Implement R2Adapter",
+                "Port PMTiles logic to use StorageAdapter"
+            ]
+        },
+        "phase_2": {
+            "name": "Local Development Experience",
+            "tasks": [
+                "Implement FileSystemAdapter",
+                "Create Bun server entry point",
+                "Dockerize for local testing with Minio"
+            ]
+        },
+        "phase_3": {
+            "name": "Production Rollout",
+            "tasks": [
+                "Deploy to Cloudflare Workers (using R2Adapter)",
+                "Verify header correctness (CORS, ETag)",
+                "A/B Testing against legacy worker"
+            ]
+        }
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "es2022",
+        "lib": [
+            "es2022"
+        ],
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "types": [
+            "@cloudflare/workers-types",
+            "node"
+        ],
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "outDir": "./dist",
+        "strict": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
+}

@@ -17,8 +17,9 @@ export interface Env {
 // Cache para la instancia de PMTiles (evita recrear en cada request)
 let pmtilesInstance: PMTiles | null = null;
 
-// Source personalizado para R2
-class R2Source {
+// Adapts R2Bucket to the PMTiles Source interface
+// We need this because PMTiles expects a specific getBytes signature
+class R2Adapter {
     bucket: R2Bucket;
     key: string;
 
@@ -27,13 +28,18 @@ class R2Source {
         this.key = key;
     }
 
+    // PMTiles needs random access to the file
     async getBytes(offset: number, length: number): Promise<{ data: ArrayBuffer }> {
+        // R2 supports standard HTTP Range requests, which maps perfectly here
         const object = await this.bucket.get(this.key, {
             range: { offset, length }
         });
+
         if (!object) {
-            throw new Error('File not found in R2');
+            throw new Error(`PMTiles file '${this.key}' not found in bucket`);
         }
+
+        // Get the raw bytes for this chunk
         const data = await object.arrayBuffer();
         return { data };
     }
@@ -96,9 +102,9 @@ export default {
                 const x = parseInt(tileMatch[2], 10);
                 const y = parseInt(tileMatch[3], 10);
 
-                // Inicializar instancia PMTiles si no existe
+                // Hot-start: Mantener instancia en memoria si ya existe
                 if (!pmtilesInstance) {
-                    const source = new R2Source(env.TILES_BUCKET, PMTILES_KEY);
+                    const source = new R2Adapter(env.TILES_BUCKET, PMTILES_KEY);
                     pmtilesInstance = new PMTiles(source);
                 }
 
@@ -131,7 +137,7 @@ export default {
             // ────────────────────────────────────────────────────────
             if (path === '/metadata') {
                 if (!pmtilesInstance) {
-                    const source = new R2Source(env.TILES_BUCKET, PMTILES_KEY);
+                    const source = new R2Adapter(env.TILES_BUCKET, PMTILES_KEY);
                     pmtilesInstance = new PMTiles(source);
                 }
 

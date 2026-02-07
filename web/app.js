@@ -9,7 +9,7 @@
 
 class PVUWebGIS {
     constructor() {
-        // Inicializar Logger
+        // Configurar logger si está habilitado en config
         if (typeof Logger !== 'undefined' && CONFIG.logging) {
             Logger.configure(CONFIG.logging);
             Logger.info('App', 'PVU WebGIS MVT Initializing...', {
@@ -25,11 +25,11 @@ class PVUWebGIS {
         this.popup = null;
         this.sourceLoaded = false;
 
-        // Referencias DOM
+        // Cache de referencias DOM
         this.sidebarEl = document.getElementById('sidebar');
 
-        // Configuración de vista inicial unificada (Estado completo)
-        this.initialView = CONFIG.ruralView; // Usar vista amplia por defecto
+        // Por defecto usar la vista completa del estado (Rural)
+        this.initialView = CONFIG.ruralView;
         this.loadingEl = document.getElementById('loading');
 
         this.init();
@@ -53,8 +53,8 @@ class PVUWebGIS {
     }
 
     initMap() {
-        // Registrar protocolo PMTiles para acceso nativo
-        // Esto permite que MapLibre lea directamente el archivo PMTiles
+        // Registrar el protocolo pmtiles para que MapLibre maneje urls pmtiles:// nativamente
+        // Esto evita necesitar un servidor de tiles separado para uso básico
         const protocol = new pmtiles.Protocol();
         maplibregl.addProtocol('pmtiles', protocol.tile);
         Logger.info('MapController', 'PMTiles protocol registered');
@@ -80,7 +80,7 @@ class PVUWebGIS {
             className: 'hover-popup'
         });
 
-        // Timeout de seguridad: Si el mapa no carga en 4 segundos, ocultar loading de todas formas
+        // Failsafe: si el mapa se cuelga por >4s, matar la pantalla de carga de todas formas
         setTimeout(() => {
             Logger.warn('App', 'Safety timeout triggered: Forcing hideLoading');
             this.hideLoading();
@@ -725,8 +725,8 @@ class PVUWebGIS {
             const config = CONFIG.layers[layerId];
             let targetId = '';
 
-            // [CRITICAL FIX] Verificar que la capa realmente exista en el estilo actual del mapa
-            // antes de intentar consultarla, para evitar errores de MapLibre.
+            // [Sanity Check] Asegurar que la capa realmente existe en el estilo actual
+            // MapLibre explota si consultas una capa inexistente (pasa al cambiar modos)
 
             if (config.type === 'geojson') {
                 // Para GeoJSON, interactuamos con puntos no clusterizados
