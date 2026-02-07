@@ -18,7 +18,7 @@ Sistema WebGIS para visualización y análisis de responsabilidades de vacunaci�
 
 ## Características Principales
 
-- **Arquitectura Agnóstica:** Gracias a un patrón de Adaptadores, el servidor de tiles puede ejecutarse en Cloudflare Workers, Node.js, Bun o Deno.
+- **Arquitectura Agnóstica:** Gracias a un patrón de Adaptadores, el servidor de tiles puede ejecutarse en Cloudflare Workers, AWS, Azre, Node.js, Bun o Deno.
 - **Visualización Avanzada:** Agebs urbanas y localidades rurales con MapLibre GL JS y PMTiles.
 - **Cero Costo:** Optimizado para el free tier de Cloudflare (Pages + Workers + R2).
 - **Código Limpio:** Refactorización profunda para eliminar rastros de IA, humanizar comentarios y estandarizar la lógica en español técnico.
@@ -45,19 +45,20 @@ VISOR-GIS-PVU/
 
 ## Tecnologías
 
-| Componente | Tecnología |
-| :--- | :--- |
-| **Backend** | Hono Framework (TypeScript) |
-| **Frontend** | MapLibre GL JS, Vanilla JS |
-| **Tiles** | PMTiles (Vector Tiles) |
-| **Almacenamiento**| Cloudflare R2 / Sistema de Archivos local |
-| **Hosting** | Cloudflare Pages (Frontend) |
+| Componente               | Tecnología                               |
+| :----------------------- | :---------------------------------------- |
+| **Backend**        | Hono Framework (TypeScript)               |
+| **Frontend**       | MapLibre GL JS, Vanilla JS                |
+| **Tiles**          | PMTiles (Vector Tiles)                    |
+| **Almacenamiento** | Cloudflare R2 / Sistema de Archivos local |
+| **Hosting**        | Cloudflare Pages (Frontend)               |
 
 ---
 
 ## Instalación y Desarrollo
 
 ### Requisitos
+
 - Node.js 18+
 - npm o bun
 
@@ -82,9 +83,10 @@ npm run deploy:worker
 ## Sobre la Migración y Limpieza
 
 Esta versión marca un hito en la madurez del proyecto:
-1.  **Limpieza:** Se han depurado comentarios generados automáticamente y scripts redundantes, moviéndolos a un archivo histórico.
-2.  **Hono:** Se seleccionó Hono por ser ligero y compatible con múltiples runtimes, eliminando el "lock-in" directo con la API de Cloudflare.
-3.  **Humanización:** Toda la documentación y comentarios han sido revisados para reflejar una comunicación técnica directa y profesional en español.
+
+1. **Limpieza:** Se han depurado comentarios generados automáticamente y scripts redundantes, moviéndolos a un archivo histórico.
+2. **Hono:** Se seleccionó Hono por ser ligero y compatible con múltiples runtimes, eliminando el "lock-in" directo con la API de Cloudflare.
+3. **Humanización:** Toda la documentación y comentarios han sido revisados para reflejar una comunicación técnica directa y profesional en español.
 
 ---
 
@@ -97,5 +99,6 @@ Este proyecto está bajo la Licencia Apache 2.0. Ver [LICENSE](LICENSE) para má
 ## Autor
 
 **Dr. Silvano Ramírez Soto**
+
 - Email: s.ramirez.s@gmail.com
 - GitHub: [@srmz04](https://github.com/srmz04)
