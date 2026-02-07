@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, Context } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { StorageFactory, RuntimeEnv } from './core/factory';
@@ -24,16 +24,13 @@ app.use('*', cors({
     maxAge: 86400,
 }));
 
-// Variable para el servicio (se inicializa en cada request o se reutiliza según el runtime)
-// Nota: En Workers, 'env' viene en el contexto del request. En Node, podemos inyectarlo.
-
 /**
  * Helper para obtener el servicio PMTiles configurado según el entorno.
  */
-const getService = (c: any) => {
+const getService = (c: Context) => {
     // Pasar las variables de entorno al Factory
+    // En Workers con Hono v4+, c.env contiene los bindings
     const adapter = StorageFactory.getAdapter(c.env as RuntimeEnv);
-    // Asumimos 'durango.pmtiles' como default, podría venir de env
     return new PMTilesService(adapter, 'durango.pmtiles');
 };
 
@@ -75,9 +72,9 @@ app.get('/metadata', async (c) => {
  * Servir Tiles individuales (X/Y/Z)
  */
 app.get('/tiles/:z/:x/:y.pbf', async (c) => {
-    const z = parseInt(c.req.param('z'));
-    const x = parseInt(c.req.param('x'));
-    const y = parseInt(c.req.param('y'));
+    const z = parseInt(c.req.param('z') || '0');
+    const x = parseInt(c.req.param('x') || '0');
+    const y = parseInt(c.req.param('y') || '0');
 
     if (isNaN(z) || isNaN(x) || isNaN(y)) {
         return c.text('Invalid parameters', 400);
@@ -104,10 +101,9 @@ app.get('/tiles/:z/:x/:y.pbf', async (c) => {
 });
 
 /**
- * Servir archivo PMTiles crudo (soporte para pmtiles://)
- * Soporta Range Requests.
+ * Handler común para archivo raw (utilizado en / y /durango.pmtiles)
  */
-app.get(['/', '/durango.pmtiles'], async (c) => {
+const rawFileHandler = async (c: Context) => {
     const service = getService(c);
     const rangeHeader = c.req.header('Range');
 
@@ -142,14 +138,6 @@ app.get(['/', '/durango.pmtiles'], async (c) => {
             }
         }
 
-        // Descarga completa (no recomendada para archivos grandes, pero soportada)
-        // Nota: En implementaciones reales con R2/S3, mejor hacer stream o redirect presigned,
-        // pero para compatibilidad completa lo implementamos via adaptador.
-
-        // ¡CUIDADO! Leer todo el archivo en memoria puede ser costoso.
-        // Para R2Adapter es un stream, para FS también.
-        // Aquí simplificamos asumiendo uso principal via Range.
-        // Si no hay range, denegar o servir stream directo si el adaptador lo soporta (no implementado en interfaz simple)
         return c.text('Please use Range header to access this file efficiently.', 200, {
             'Accept-Ranges': 'bytes',
             'Content-Length': contentLength.toString(),
@@ -159,6 +147,10 @@ app.get(['/', '/durango.pmtiles'], async (c) => {
     } catch (err: any) {
         return c.text(`Error: ${err.message}`, 500);
     }
-});
+};
+
+// Rutas explícitas para evitar overload error de TypeScript en Hono v4
+app.get('/', rawFileHandler);
+app.get('/durango.pmtiles', rawFileHandler);
 
 export default app;

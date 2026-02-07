@@ -1,6 +1,7 @@
 {
     "name": "pvu-tiles-worker",
     "version": "1.0.0",
+    "type": "module",
     "private": true,
     "scripts": {
         "start": "ts-node src/server.ts",
@@ -16,6 +17,8 @@
     },
     "devDependencies": {
         "@cloudflare/workers-types": "^4.20240117.0",
+        "@types/node": "^25.2.1",
+        "ts-node": "^10.9.2",
         "typescript": "^5.3.0",
         "wrangler": "^3.0.0"
     }
