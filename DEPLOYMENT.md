@@ -1,18 +1,21 @@
 # Guía Rápida de Despliegue en Servidor Ubuntu
 
 ## Servidor Institucional
+
 - **IP:** 10.6.35.42
 - **Usuario:** epidemiologia
-- **Contraseña:** V4ZZ1N@t10n!
+- **Contraseña:** 
 
 ## Pasos de Despliegue
 
 ### 1. Conectarse al Servidor
+
 ```bash
 ssh epidemiologia@10.6.35.42
 ```
 
 ### 2. Clonar el Repositorio
+
 ```bash
 cd /tmp
 git clone https://github.com/srmz04/VISOR-GIS-PVU.git
@@ -20,16 +23,19 @@ cd VISOR-GIS-PVU
 ```
 
 ### 3. Instalar Dependencias
+
 ```bash
 ./scripts/install.sh
 ```
 
 ### 4. Desplegar el Servicio
+
 ```bash
 sudo ./scripts/deploy.sh
 ```
 
 ### 5. Verificar
+
 ```bash
 # Ver estado del servicio
 sudo systemctl status pvu-tiles
