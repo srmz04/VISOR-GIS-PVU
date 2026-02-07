@@ -1,0 +1,33 @@
+[Unit]
+Description=VISOR-GIS-PVU Tile Server
+After=network.target
+
+[Service]
+Type=simple
+User=tiles-service
+Group=tiles-service
+WorkingDirectory=/opt/pvu-tiles
+ExecStart=/usr/bin/node dist/server.js
+Restart=on-failure
+RestartSec=10
+
+# Variables de entorno
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+Environment="TILES_PATH=/var/lib/pvu-tiles"
+
+# Hardening de seguridad
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/pvu-tiles
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+# Límites de recursos
+LimitNOFILE=65536
+MemoryLimit=512M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target
