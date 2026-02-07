@@ -1,7 +1,8 @@
-# PVU WebGIS - Visor Geoespacial de Vacunación
+# VISOR GIS/PVU - Versión Hono
 
-Sistema WebGIS para visualización y análisis de responsabilidades de vacunación en el estado de Durango, México. Permite explorar la distribución geográfica de responsabilidades institucionales (IMSS, ISSSTE, SSA) tanto en zonas urbanas (AGEBs) como rurales (localidades).
+Sistema WebGIS para visualización y análisis de responsabilidades de vacunación en el estado de Durango, México. Esta versión ha sido migrada a una arquitectura agnóstica de nube usando el framework **Hono**.
 
+![Hono](https://img.shields.io/badge/Hono-Framework-e36002)
 ![MapLibre](https://img.shields.io/badge/MapLibre-GL-blue)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-orange)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
@@ -10,97 +11,80 @@ Sistema WebGIS para visualización y análisis de responsabilidades de vacunaci�
 
 ## Demo
 
-**Versión en línea:** [https://pvu-webgis-2025.pages.dev](https://pvu-webgis-2025.pages.dev)
+**Versión en línea:** [https://main.pvu-webgis-2025.pages.dev](https://main.pvu-webgis-2025.pages.dev)
+**Tile Server (Health Check):** [https://pvu-tiles-worker.xtrctr.workers.dev/health](https://pvu-tiles-worker.xtrctr.workers.dev/health)
 
 ---
 
-## Características
+## Características Principales
 
-- Visualización de AGEBs urbanas con responsabilidad institucional
-- Mapeo de localidades rurales con clustering dinámico
-- Búsqueda por nombre de localidad o clave de AGEB
-- Activación automática de capas al seleccionar resultados
-- Interfaz responsive (móvil y escritorio)
-- Datos servidos mediante Vector Tiles (PMTiles)
-
----
-
-## Tecnologías
-
-| Componente | Tecnología                 |
-| ---------- | --------------------------- |
-| Frontend   | MapLibre GL JS, Vanilla JS  |
-| Tiles      | PMTiles, Cloudflare Workers |
-| Datos      | GeoJSON, Shapefiles (INEGI) |
-| Hosting    | Cloudflare Pages            |
-| Desarrollo | Python, QGIS                |
-
----
-
-## Instalación Local
-
-```bash
-# Clonar repositorio
-git clone https://github.com/srmz04/VISOR-GIS-PVU.git
-cd VISOR-GIS-PVU
-
-# Iniciar servidor local
-cd web
-python3 -m http.server 3000
-
-# Abrir en navegador
-# http://localhost:3000
-```
+- **Arquitectura Agnóstica:** Gracias a un patrón de Adaptadores, el servidor de tiles puede ejecutarse en Cloudflare Workers, Node.js, Bun o Deno.
+- **Visualización Avanzada:** Agebs urbanas y localidades rurales con MapLibre GL JS y PMTiles.
+- **Cero Costo:** Optimizado para el free tier de Cloudflare (Pages + Workers + R2).
+- **Código Limpio:** Refactorización profunda para eliminar rastros de IA, humanizar comentarios y estandarizar la lógica en español técnico.
 
 ---
 
 ## Estructura del Proyecto
 
 ```
-pvu-webgis/
-├── web/                    # Aplicación frontend
-│   ├── index.html         # Página principal
-│   ├── app.js             # Lógica del visor
-│   ├── config.js          # Configuración de capas
-│   ├── styles.css         # Estilos
-│   └── data/              # Datos para el visor
-├── workers/               # Cloudflare Workers (tiles)
-├── tools/                 # Scripts de procesamiento
-├── data/                  # Datos procesados
-├── Dockerfile            # Imagen Docker
-└── docker-compose.yml    # Orquestación
+VISOR-GIS-PVU/
+├── src/                    # Código fuente (TypeScript)
+│   ├── adapters/          # Adaptadores de almacenamiento (R2, FS)
+│   ├── core/              # Lógica de negocio y servicios PMTiles
+│   ├── app.ts             # Aplicación Hono (universal)
+│   ├── worker.ts          # Entry point para Cloudflare Workers
+│   └── server.ts          # Entry point para Node.js (Ubuntu/Local)
+├── web/                    # Aplicación frontend (MapLibre JS)
+├── _archive/               # Archivo de infraestructura y scripts legados
+├── data/                   # Datos procesados (PMTiles, JSON)
+└── project_definition.json # Especificación técnica del proyecto
 ```
 
 ---
 
-## Sobre Este Proyecto
+## Tecnologías
 
-Este sistema fue desarrollado como ejercicio práctico para aplicar conocimientos adquiridos en cursos de desarrollo web, GIS y visualización de datos, en el marco del **Proyecto de Microregionalización de Servicios de Vacunación en el Estado de Durango**, realizado en colaboración con los Servicios de Salud de Durango, INEGI y la Universidad Juárez del Estado de Durango.
-
-El proyecto se comparte públicamente con la esperanza de que pueda ser útil a otras personas u organizaciones con necesidades similares de visualización geoespacial en el sector salud.
-
-### Filosofía
-
-- **Open Source:** El código es libre y abierto bajo licencia Apache 2.0
-- **Atribución:** Si utilizas este proyecto, se agradece mención al autor
-- **Comunidad:** Las contribuciones y mejoras son bienvenidas
-- **Transparencia:** El desarrollo es público y documentado
-
-### Si usas este proyecto...
-
-Me encantaría saber cómo lo estás utilizando. No es obligatorio, pero si este proyecto te resulta útil, considera:
-
-1. Dar una estrella al repositorio
-2. Enviarme un breve mensaje a s.ramirez.s@gmail.com
-3. Mencionar la fuente en tu documentación
-
-Esto me ayuda a entender el impacto del proyecto y motivarme a seguir mejorándolo.
+| Componente | Tecnología |
+| :--- | :--- |
+| **Backend** | Hono Framework (TypeScript) |
+| **Frontend** | MapLibre GL JS, Vanilla JS |
+| **Tiles** | PMTiles (Vector Tiles) |
+| **Almacenamiento**| Cloudflare R2 / Sistema de Archivos local |
+| **Hosting** | Cloudflare Pages (Frontend) |
 
 ---
 
-## Contribuciones
+## Instalación y Desarrollo
 
-Las contribuciones son bienvenidas. Por favor lee [CONTRIBUTING.md](CONTRIBUTING.md) para conocer el proceso.
+### Requisitos
+- Node.js 18+
+- npm o bun
+
+### Comandos principales
+
+```bash
+# Instalar dependencias
+npm install
+
+# Servidor de tiles local (Node.js)
+npm run start
+
+# Desarrollo Workers (Wrangler)
+npm run dev:worker
+
+# Despliegue Workers
+npm run deploy:worker
+```
+
+---
+
+## Sobre la Migración y Limpieza
+
+Esta versión marca un hito en la madurez del proyecto:
+1.  **Limpieza:** Se han depurado comentarios generados automáticamente y scripts redundantes, moviéndolos a un archivo histórico.
+2.  **Hono:** Se seleccionó Hono por ser ligero y compatible con múltiples runtimes, eliminando el "lock-in" directo con la API de Cloudflare.
+3.  **Humanización:** Toda la documentación y comentarios han sido revisados para reflejar una comunicación técnica directa y profesional en español.
 
 ---
 
@@ -113,13 +97,5 @@ Este proyecto está bajo la Licencia Apache 2.0. Ver [LICENSE](LICENSE) para má
 ## Autor
 
 **Dr. Silvano Ramírez Soto**
-
 - Email: s.ramirez.s@gmail.com
 - GitHub: [@srmz04](https://github.com/srmz04)
-
----
-
-## Agradecimientos
-
-- Datos geográficos y asesoría técnica: INEGI (Marco Geoestadístico Nacional)
-- Inspiración: La necesidad de herramientas accesibles para el sector salud público
