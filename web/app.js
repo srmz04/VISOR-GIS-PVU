@@ -80,11 +80,11 @@ class PVUWebGIS {
             className: 'hover-popup'
         });
 
-        // Failsafe: si el mapa se cuelga por >4s, matar la pantalla de carga de todas formas
+        // Failsafe: si el mapa se cuelga, matar la pantalla de carga rápido para no bloquear UX
         setTimeout(() => {
             Logger.warn('App', 'Safety timeout triggered: Forcing hideLoading');
             this.hideLoading();
-        }, 4000);
+        }, 1500);
 
         this.map.on('load', () => {
             Logger.info('MapController', 'Map loaded, adding PMTiles source');
@@ -125,6 +125,14 @@ class PVUWebGIS {
             maxzoom: 14
         });
 
+        // Cargar fuentes adicionales definidas en las capas (ej. PMTiles locales)
+        Object.values(CONFIG.layers).forEach(layer => {
+            if (layer.source && layer.sourceDef && !this.map.getSource(layer.source)) {
+                Logger.info('MapController', `Adding extra source: ${layer.source}`, layer.sourceDef);
+                this.map.addSource(layer.source, layer.sourceDef);
+            }
+        });
+
         this.sourceLoaded = true;
         Logger.info('MapController', 'Vector tiles source added', { url: tilesBaseUrl });
     }
@@ -136,24 +144,16 @@ class PVUWebGIS {
             version: 8,
             glyphs: glyphsUrl,
             sources: {
-                'esri-satellite': {
+                'esri-street': {
                     type: 'raster',
                     tiles: [
-                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-                    ],
-                    tileSize: 256
-                },
-                'esri-labels': {
-                    type: 'raster',
-                    tiles: [
-                        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
+                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'
                     ],
                     tileSize: 256
                 }
             },
             layers: [
-                { id: 'esri-satellite-layer', type: 'raster', source: 'esri-satellite' },
-                { id: 'esri-labels-layer', type: 'raster', source: 'esri-labels' }
+                { id: 'esri-street-layer', type: 'raster', source: 'esri-street' }
             ]
         };
     }
@@ -163,17 +163,18 @@ class PVUWebGIS {
     // =====================================================
 
     addVectorLayer(layerId) {
-        // [DEFENSIVE] Verificar explícitamente que la fuente exista en el mapa
-        // Esto previene crashes si setStyle eliminó la fuente y aún no se restauraba.
-        if (!this.map.getSource('pvu-tiles')) {
-            Logger.warn('MapController', 'Source pvu-tiles not found in map style, skipping layer add', { layerId });
-            this.sourceLoaded = false;
-            return;
-        }
-
         const config = CONFIG.layers[layerId];
         if (!config) {
             Logger.error('MapController', 'Layer config not found', { layerId });
+            return;
+        }
+
+        // Determinar source (por defecto pvu-tiles)
+        const sourceId = config.source || 'pvu-tiles';
+
+        // [DEFENSIVE] Verificar explícitamente que la fuente exista en el mapa
+        if (!this.map.getSource(sourceId)) {
+            Logger.warn('MapController', `Source ${sourceId} not found in map, skipping layer add`, { layerId });
             return;
         }
 
@@ -197,7 +198,7 @@ class PVUWebGIS {
                 this.map.addLayer({
                     id: `${layerId}-fill`,
                     type: 'fill',
-                    source: 'pvu-tiles',
+                    source: sourceId,
                     'source-layer': sourceLayer,
                     paint: {
                         'fill-color': config.color,
@@ -209,7 +210,7 @@ class PVUWebGIS {
                 this.map.addLayer({
                     id: `${layerId}-line`,
                     type: 'line',
-                    source: 'pvu-tiles',
+                    source: sourceId,
                     'source-layer': sourceLayer,
                     paint: {
                         'line-color': config.borderColor,
@@ -226,7 +227,7 @@ class PVUWebGIS {
                 this.map.addLayer({
                     id: `${layerId}-circle`,
                     type: 'circle',
-                    source: 'pvu-tiles',
+                    source: sourceId,
                     'source-layer': sourceLayer,
                     paint: {
                         'circle-color': config.color,
@@ -362,7 +363,7 @@ class PVUWebGIS {
     addLabelLayer(layerId, sourceLayer, geometryType) {
         const config = CONFIG.layers[layerId];
 
-        let source = 'pvu-tiles';
+        let source = config.source || 'pvu-tiles';
         let sourceLayerVal = sourceLayer;
         let minzoom = 5;
 
@@ -370,7 +371,7 @@ class PVUWebGIS {
         if (config.type === 'geojson') {
             source = `source-${layerId}`;
             sourceLayerVal = undefined; // GeoJSON no usa source-layer
-            minzoom = 9; // Visible a partir de zoom 9+
+            minzoom = 5; // Restaurar visibilidad (antes era 9)
         }
 
         // Para polígonos (Urbano) usamos CVE_AGEB, para puntos (Rural) usamos NOMLOC
@@ -435,60 +436,39 @@ class PVUWebGIS {
     }
 
     updateLayerControls() {
-        const container = document.getElementById('layerControls');
-        if (!container) return;
+        // En la nueva UI (Tailwind Sidebar), los controles ya existen en el HTML estático.
+        // Solo necesitamos atachar los listeners a los checkboxes existentes.
 
-        container.innerHTML = '';
+        // Obtenemos todos los checkboxes con data-layer-id (Urbano y Rural)
+        const checkboxes = document.querySelectorAll('#layerControls input[type="checkbox"][data-layer-id]');
 
-        // Definir grupos principales
-        const groups = {
-            'URBANO': { label: 'AGEBs URBANAS', active: false },
-            'RURAL': { label: 'LOCALIDADES RURALES', active: false }
-        };
+        checkboxes.forEach(checkbox => {
+            const layerId = checkbox.getAttribute('data-layer-id');
 
-        // Verificar estado actual para sincronizar botones (si al menos una está on, el grupo "podría" estar activo parcial, pero para simplificar, si hay alguna on, asumimos activo/mixto, si todas off, inactivo)
-        // Simplificación: Un botón toggle para cada grupo.
+            // Sincronizar estado inicial con el estado de la capa
+            checkbox.checked = !!this.layerStates[layerId];
 
-        Object.keys(groups).forEach(groupKey => {
-            const groupConfig = groups[groupKey];
-
-            // Contar capas activas en este grupo para decidir estado inicial visual del botón
-            const layersInGroup = Object.entries(CONFIG.layers).filter(([_, c]) => c.grupo === groupKey && !c.uiHidden);
-            const activeCount = layersInGroup.filter(([id, _]) => this.activeLayers[id]).length;
-            const isFullyActive = activeCount === layersInGroup.length;
-            const isPartiallyActive = activeCount > 0 && activeCount < layersInGroup.length;
-
-            const btn = document.createElement('div');
-            btn.className = `layer-group-toggle ${isFullyActive ? 'active' : ''} ${isPartiallyActive ? 'partial' : ''}`;
-            btn.innerHTML = `
-                <span class="group-label">${groupConfig.label}</span>
-                <span class="group-status">${isFullyActive ? 'ON' : (isPartiallyActive ? '...' : 'OFF')}</span>
-            `;
-
-            btn.onclick = () => {
-                // Lógica de Toggle: Si hay algo activo, apagar todo. Si todo apagado, encender todo.
-                const turnOn = activeCount === 0; // Si está todo apagado, encendemos. Si hay algo (partial o full), apagamos.
-
-                // Excepción: Si es partial, tal vez querramos encender todo primero?
-                // UX Standard: Toggle suele ser: Off -> On -> Off. 
-                // Si es Partial -> On -> Off parece mejor que Partial -> Off.
-                // Decisión: Si no está FULL, poner FULL. Si está FULL, apagar.
-                const targetState = !isFullyActive;
-
-                layersInGroup.forEach(([id, _]) => {
-                    // Solo actuar si el estado cambia para evitar parpadeos innecesarios
-                    if (!!this.activeLayers[id] !== targetState) {
-                        this.toggleLayer(id, targetState); // Pasar el estado objetivo explícitamente
-                    }
-                });
-
-                // toggleLayer llama a updateLegend, pero NO a updateLayerControls recursivamente para evitar loops infinitos si no se maneja bien.
-                // Aquí forzamos actualización visual de los botones
-                this.updateLayerControls();
-            };
-
-            container.appendChild(btn);
+            // Listener para cambios
+            checkbox.addEventListener('change', (e) => {
+                this.toggleLayer(layerId, e.target.checked);
+                this.updateUIState();
+            });
         });
+
+        // Etiqueta Global Toggle
+        const labelToggle = document.getElementById('globalLabelToggle');
+        if (labelToggle) {
+            labelToggle.checked = this.showLabels;
+            labelToggle.addEventListener('change', (e) => {
+                this.toggleLabels(e.target.checked);
+            });
+        }
+    }
+
+    updateUIState() {
+        // Actualizar bordes activos u otros elementos visuales si es necesario
+        // En la versión Tailwind actual, el checkbox es el único indicador,
+        // pero podríamos añadir clases al contenedor padre si quisiéramos.
     }
 
     toggleLayer(layerId, isActive) {
@@ -569,85 +549,17 @@ class PVUWebGIS {
 
     loadUnifiedView() {
         this.removeAllLayers();
+        // Sincronizar UI inicial
         this.updateLayerControls();
 
         // Cargar capas activas por defecto
         Object.entries(CONFIG.layers).forEach(([id, layer]) => {
-            // Si es dependiente, su estado depende del controlador, ignorar aquí si se procesa después
-            // Pero mejor: verificar si está activo o si su controlador está activo
-            let shouldBeActive = this.layerStates[id] || layer.defaultActive;
-
-            if (layer.controlledBy) {
-                const controllerId = layer.controlledBy;
-                const controllerActive = this.layerStates[controllerId] || CONFIG.layers[controllerId].defaultActive;
-                if (controllerActive) shouldBeActive = true;
-            }
-
-            if (shouldBeActive) {
+            if (layer.defaultActive) {
                 this.addVectorLayer(id);
-                this.layerStates[id] = true;
             }
         });
 
         this.updateLegend();
-    }
-
-    updateLayerControls() {
-        const container = document.getElementById('layerControls');
-        if (!container) return;
-
-        // Limpiar contenedor
-        container.innerHTML = '';
-
-        // Definir grupos
-        const groups = [
-            { id: 'URBANO', title: 'AGEBs Urbanas' },
-            { id: 'RURAL', title: 'Localidades Rurales' }
-        ];
-
-        groups.forEach(group => {
-            const groupHeader = document.createElement('h4');
-            groupHeader.className = 'layer-group-title';
-            groupHeader.textContent = group.title;
-            // Estilo inline simple para el título de grupo (se puede mover a CSS)
-            groupHeader.style.marginTop = '15px';
-            groupHeader.style.marginBottom = '8px';
-            groupHeader.style.fontSize = '0.9rem';
-            groupHeader.style.color = '#64748b';
-            groupHeader.style.textTransform = 'uppercase';
-            groupHeader.style.letterSpacing = '0.05em';
-
-            container.appendChild(groupHeader);
-
-            container.appendChild(groupHeader);
-
-            // Filtrar capas ocultas (uiHidden: true)
-            const layers = CONFIG.getLayersByGroup(group.id)
-                .filter(([_, layer]) => !layer.uiHidden);
-
-            const groupContainer = document.createElement('div');
-            groupContainer.className = 'layer-group-list';
-
-            groupContainer.innerHTML = layers.map(([id, layer]) => `
-                <label class="layer-item">
-                    <input type="checkbox" 
-                           class="layer-checkbox" 
-                           data-layer="${id}" 
-                           ${this.layerStates[id] ? 'checked' : ''}>
-                    <span class="layer-color" style="background-color: ${layer.color}"></span>
-                    <span class="layer-name">${layer.nombre}</span>
-                </label>
-            `).join('');
-
-            container.appendChild(groupContainer);
-        });
-
-        // Re-attach event listeners
-        container.querySelectorAll('.layer-checkbox').forEach(cb => {
-            cb.addEventListener('change', (e) => {
-                this.toggleLayer(e.target.dataset.layer, e.target.checked);
-            });
-        });
     }
 
     updateLegend() {
@@ -706,7 +618,8 @@ class PVUWebGIS {
             if (features.length > 0) {
                 this.map.getCanvas().style.cursor = 'pointer';
                 const props = features[0].properties;
-                const name = props.NOMLOC || props.NOM_LOC || props.NOM_MUN || 'Feature';
+                // [MOD] Priorizar CVE_AGEB para zonas urbanas, luego NOMLOC para rurales
+                const name = props.CVE_AGEB || props.NOMLOC || props.NOM_LOC || props.NOM_MUN || 'Feature';
 
                 this.popup
                     .setLngLat(e.lngLat)
@@ -773,40 +686,102 @@ class PVUWebGIS {
     }
 
     formatFeatureInfo(props) {
-        const fields = [
-            { key: 'INSTITUCION', label: 'Institución' },
-            { key: 'INSTITUCI', label: 'Institución' },
-            { key: 'NOM_MUN', label: 'Municipio' },
-            { key: 'NOM_LOC', label: 'Localidad' },
-            { key: 'NOMLOC', label: 'Localidad' },
-            { key: 'POBTOT', label: 'Población Total' },
-            { key: 'POBFEM', label: 'Población Femenina' },
-            { key: 'POBMAS', label: 'Población Masculina' },
-            { key: 'JURISDICCION_NUM', label: 'Jurisdicción' },
-            { key: 'CVE_MUN', label: 'Clave Municipal' },
-            { key: 'CVEGEO9', label: 'Clave Geo' }
+        // Definición de grupos de metadatos para organizar la información
+        const groups = [
+            {
+                title: null, // Subtítulo eliminado
+                fields: [
+                    { key: 'INSTITUCION', label: 'Institución' },
+                    { key: 'INSTITUCI', label: 'Institución' },
+                    { key: 'NOM_MUN', label: 'Municipio' },
+                    { key: 'NOM_LOC', label: 'Localidad' },
+                    { key: 'NOMLOC', label: 'Localidad' },
+                    { key: 'CVE_AGEB', label: 'Clave AGEB' },
+                    { key: 'CVE_LOC', label: 'Clave Loc.' },
+                    { key: 'CVE_MUN', label: 'Clave Mun.' },
+                    { key: 'JURISDICCION_NUM', label: 'Jurisdicción' }
+                ]
+            },
+            {
+                title: 'Población General',
+                fields: [
+                    { key: 'POBTOT', label: 'Población Total' },
+                    { key: 'POBFEM', label: 'Mujeres' },
+                    { key: 'POBMAS', label: 'Hombres' },
+                    { key: 'REL_H_M', label: 'Relación H-M' }
+                ]
+            },
+            {
+                title: null, // Subtítulo eliminado
+                fields: [
+                    { key: 'P_0A2', label: '0 a 2 años' },
+                    { key: 'P_3A5', label: '3 a 5 años' },
+                    { key: 'POB0_14', label: '0 a 14 años' },
+                    { key: 'P_6A11', label: '6 a 11 años' },
+                    { key: 'P_8A14', label: '8 a 14 años' },
+                    { key: 'P_12A14', label: '12 a 14 años' }
+                ]
+            },
+            {
+                title: null, // Subtítulo eliminado
+                fields: [
+                    { key: 'P_15A17', label: '15 a 17 años' },
+                    { key: 'P_18A24', label: '18 a 24 años' },
+                    { key: 'POB15_64', label: '15 a 64 años' },
+                    { key: 'P_15A49_F', label: 'Mujeres 15-49' }, // Edad fértil
+                    { key: 'P_60YMAS', label: '60 años y más' },
+                    { key: 'POB65_MAS', label: '65 años y más' }
+                ]
+            }
         ];
 
-        let html = '<table class="info-table">';
+        let html = '<div class="space-y-3">'; // Contenedor con espaciado vertical
 
-        const displayedKeys = new Set();
+        groups.forEach(group => {
+            let groupRows = '';
+            let displayedLabels = new Set(); // Evitar duplicados (ej: INSTITUCION vs INSTITUCI)
 
-        fields.forEach(field => {
-            let value = props[field.key];
-            if (value !== undefined && value !== null && !displayedKeys.has(field.label)) {
-                // [MOD] Unificar SIN_COBERTURA con SSD en metadatos
-                if (field.key === 'INSTITUCION' || field.key === 'INSTITUCI') {
-                    if (value === 'SIN_COBERTURA' || value === 'SIN COBERTURA' || value === 'JURISDICCION') {
-                        value = 'SSD';
+            group.fields.forEach(field => {
+                let value = props[field.key];
+
+                // Filtrar valores nulos o vacíos, pero permitir 0 o arteriscos
+                if (value !== undefined && value !== null && value !== '' && !displayedLabels.has(field.label)) {
+
+                    // Normalización de Institución
+                    if (field.label === 'Institución') {
+                        if (['SIN_COBERTURA', 'SIN COBERTURA', 'JURISDICCION'].includes(value)) {
+                            value = 'SSD';
+                        }
                     }
+
+                    groupRows += `
+                        <tr>
+                            <th>${field.label}</th>
+                            <td>${value}</td>
+                        </tr>
+                    `;
+                    displayedLabels.add(field.label);
+                }
+            });
+
+            if (groupRows) {
+                // Solo mostrar el grupo si tiene al menos un dato
+                html += '<div>';
+
+                if (group.title) {
+                    html += `<h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 border-b border-slate-100 pb-0.5">${group.title}</h4>`;
                 }
 
-                html += `<tr><th>${field.label}</th><td>${value}</td></tr>`;
-                displayedKeys.add(field.label);
+                html += `
+                        <table class="info-table text-xs">
+                            ${groupRows}
+                        </table>
+                    </div>
+                `;
             }
         });
 
-        html += '</table>';
+        html += '</div>';
         return html;
     }
 
@@ -834,8 +809,12 @@ class PVUWebGIS {
     }
 
     handleSearch(query) {
+        const resultsEl = document.getElementById('searchResults');
+        if (!resultsEl) return;
+
         if (!query || query.length < 2) {
-            document.getElementById('searchResults').innerHTML = '';
+            resultsEl.innerHTML = '';
+            resultsEl.classList.remove('active');
             return;
         }
 
@@ -860,22 +839,23 @@ class PVUWebGIS {
             this.initSearchIndex().catch(e => console.warn(e));
         }
 
-        const resultsEl = document.getElementById('searchResults');
         if (results.length === 0) {
-            resultsEl.innerHTML = '<p class="no-results">No se encontraron resultados</p>';
+            resultsEl.innerHTML = '<div class="search-result-item text-slate-500 italic">No se encontraron resultados</div>';
+            resultsEl.classList.add('active');
             return;
         }
 
         resultsEl.innerHTML = results.map(r => `
-            <div class="search-result" data-coords="${JSON.stringify(r.c)}">
-                <strong>${r.n}</strong>
-                ${r.m ? `<span class="result-mun">${r.m}</span>` : ''}
-                ${r.i ? `<span class="result-inst" style="background:${this.getInstColor(r.i)}"></span>` : ''}
+            <div class="search-result-item border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors" data-coords="${JSON.stringify(r.c)}">
+                <div class="font-medium text-slate-800">${r.n}</div>
+                ${r.m ? `<div class="text-xs text-slate-500">${r.m}</div>` : ''}
             </div>
         `).join('');
 
+        resultsEl.classList.add('active');
+
         // Event listeners
-        resultsEl.querySelectorAll('.search-result').forEach((el, index) => {
+        resultsEl.querySelectorAll('.search-result-item').forEach((el, index) => {
             el.addEventListener('click', () => {
                 try {
                     const r = results[index]; // Acceder al objeto de resultado original
@@ -902,7 +882,6 @@ class PVUWebGIS {
                         const zoom = isUrban ? 15 : 13;
                         this.map.flyTo({ center: coords, zoom: zoom, speed: 1.5 });
                     }
-                    resultsEl.innerHTML = '';
                     const input = document.getElementById('searchInput');
                     if (input) input.value = '';
                 } catch (e) {
@@ -968,52 +947,105 @@ class PVUWebGIS {
     // =====================================================
 
     initEventListeners() {
+        // Search Listener
+        // Toggle sidebar
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        const toggleSidebar = (show) => {
+            if (show) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                // Small delay to allow display:block to apply before opacity transition
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        };
+
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => toggleSidebar(true));
+        }
+        if (closeSidebar) {
+            closeSidebar.addEventListener('click', () => toggleSidebar(false));
+        }
+        if (overlay) {
+            overlay.addEventListener('click', () => toggleSidebar(false));
+        }
+
+        // Cerrar sidebar al hacer clic fuera (móvil) - Redundante si tenemos overlay, pero buena práctica
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !sidebar.classList.contains('translate-x-full')) {
+                toggleSidebar(false);
+            }
+        });
+        const searchInput = document.getElementById('searchInput');
+        let searchTimeout;
+
+        if (searchInput) {
+            // Enter key to search immediately
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimeout);
+                    this.handleSearch(e.target.value);
+                }
+            });
+
+            // Input event for debounce search (type-ahead)
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                // Debounce 300ms
+                searchTimeout = setTimeout(() => this.handleSearch(e.target.value), 300);
+            });
+        }
+
+        // My Location
+        const locateBtn = document.getElementById('locateBtn');
+        if (locateBtn) {
+            locateBtn.addEventListener('click', () => {
+                this.map.addControl(new maplibregl.GeolocateControl({
+                    positionOptions: { enableHighAccuracy: true },
+                    trackUserLocation: true
+                }), 'bottom-right');
+                // Trigger the click on the geolocate control immediately or just use navigator.geolocation
+                // For simplicity, let's fly to Durango Default
+                this.map.flyTo({ center: CONFIG.initialView.center, zoom: CONFIG.initialView.zoom });
+            });
+        }
+
+        // Info Panel Close
+        const closeInfoBtn = document.getElementById('closeInfo');
+        if (closeInfoBtn) {
+            closeInfoBtn.addEventListener('click', () => {
+                this.hideInfo();
+            });
+        }
+
         // Toggle de etiquetas
         document.getElementById('globalLabelToggle')?.addEventListener('change', (e) => {
             this.toggleLabels(e.target.checked);
         });
 
-        // Opacidad
-        document.getElementById('opacitySlider')?.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value) / 100;
-            this.setLayerOpacity(value);
-            document.getElementById('opacityValue').textContent = e.target.value;
-        });
+        // Control de opacidad (transparencia)
+        const opacitySlider = document.getElementById('opacitySlider');
+        const opacityValue = document.getElementById('opacityValue');
+        if (opacitySlider) {
+            // Inicializar con el valor por defecto (80%)
+            this.setLayerOpacity(0.8);
 
-        // Basemaps - OMITIDO EN VISTA UNIFICADA
+            opacitySlider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value, 10);
+                if (opacityValue) opacityValue.textContent = `${value}%`;
+                this.setLayerOpacity(value / 100);
+            });
+        }
 
-
-        // Búsqueda
-        const searchInput = document.getElementById('searchInput');
-        const searchBtn = document.getElementById('searchBtn');
-
-        let searchTimeout;
-        searchInput?.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => this.handleSearch(searchInput.value), 300);
-        });
-
-        searchBtn?.addEventListener('click', () => this.handleSearch(searchInput?.value));
-
-        // Controles del mapa
-        document.getElementById('zoomInBtn')?.addEventListener('click', () => this.map.zoomIn());
-        document.getElementById('zoomOutBtn')?.addEventListener('click', () => this.map.zoomOut());
-        document.getElementById('resetView')?.addEventListener('click', () => this.resetView());
-        document.getElementById('locateBtn')?.addEventListener('click', () => this.locateUser());
-        document.getElementById('closeInfo')?.addEventListener('click', () => this.hideInfo());
-
-        // Toggle sidebar
-        document.getElementById('menuBtn')?.addEventListener('click', () => this.toggleSidebar());
-
-        // Cerrar sidebar al hacer clic fuera (móvil)
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth < 768 &&
-                this.sidebarEl?.classList.contains('open') &&
-                !this.sidebarEl.contains(e.target) &&
-                !e.target.closest('#menuBtn')) {
-                this.sidebarEl.classList.remove('open');
-            }
-        });
+        // Controles de zoom (si los hubiera en el futuro, por ahora solo están los nativos de maplibre que añadimos en initMap)
+        // El nuevo diseño no tiene botones explícitos de zoom en el HTML, usa los controles del mapa.
     }
 
     // =====================================================
@@ -1034,16 +1066,18 @@ class PVUWebGIS {
 
     showInfo(title, content) {
         const panel = document.getElementById('infoPanel');
-        const titleEl = panel?.querySelector('.info-title');
-        const contentEl = panel?.querySelector('.info-content');
-
-        if (titleEl) titleEl.textContent = title;
-        if (contentEl) contentEl.innerHTML = content;
-        panel?.classList.add('visible');
+        if (panel) {
+            panel.classList.remove('hidden');
+            const contentEl = panel.querySelector('.info-content');
+            if (contentEl) contentEl.innerHTML = `<strong>${title}</strong><br/>${content}`;
+        }
     }
 
     hideInfo() {
-        document.getElementById('infoPanel')?.classList.remove('visible');
+        const panel = document.getElementById('infoPanel');
+        if (panel) {
+            panel.classList.add('hidden');
+        }
     }
 
     resetView() {

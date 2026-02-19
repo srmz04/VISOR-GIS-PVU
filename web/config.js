@@ -87,6 +87,26 @@ const CONFIG = {
         },
 
         // ─────────────────────────────────────────────────
+        // CAPAS EPIDEMIOLÓGICAS
+        // ─────────────────────────────────────────────────
+        'sarampion_confirmados': {
+            source: 'sarampion-source',
+            sourceLayer: 'sarampion_municipios',
+            nombre: 'Casos Sarampión',
+            color: '#FF0000', // Rojo intenso
+            borderColor: '#800000',
+            grupo: 'EPIDEMIO',
+            geometria: 'Polygon',
+            defaultActive: false,
+            orden: 1,
+            // Source definition for local loading in app.js
+            sourceDef: {
+                type: 'vector',
+                url: 'pmtiles://./data/sarampion_municipios.pmtiles'
+            }
+        },
+
+        // ─────────────────────────────────────────────────
         // MODO RURAL: Puntos de localidades
         // ─────────────────────────────────────────────────
         'rural_imss_bienestar': {
