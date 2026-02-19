@@ -761,7 +761,7 @@ class PVUWebGIS {
             return `
               <div class="space-y-3 text-xs">
 
-                <div class="bg-orange-50 border border-orange-200 rounded p-2 text-center mb-2">
+                <div class="bg-orange-50 border border-orange-200 rounded p-2 text-left mb-2">
                   <div class="text-lg font-bold text-orange-600">${props.NOM_MUN ?? '—'}</div>
                   <div class="text-[9px] text-orange-400 uppercase tracking-widest">Municipio de Notificación</div>
                 </div>
@@ -771,14 +771,14 @@ class PVUWebGIS {
                   <tr><th>Hospitalizados <span class="text-[9px] font-normal text-slate-400">(Actuales)</span></th> <td class="${hospColor}">${hosp} (${pctHosp}%)</td></tr>
                 </table>
 
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5 mt-2">Vacunación</h4>
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5 mt-2 text-left">Vacunación</h4>
                 <table class="info-table">
                   <tr><th>Sin vacuna</th>  <td><span class="text-red-600 font-semibold">${props.SIN_VACUNA} (${pct})</span></td></tr>
                   <tr><th>1 dosis</th>     <td>${props.UNA_DOSIS}</td></tr>
                   <tr><th>2 dosis</th>     <td>${props.DOS_DOSIS}</td></tr>
                 </table>
 
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5 mt-2">Cadena de transmisión</h4>
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5 mt-2 text-left">Cadena de transmisión</h4>
                 <table class="info-table">
                   <tr><th>Con contacto</th>      <td>${props.CON_CONTACTO}</td></tr>
                   <tr><th>Con viaje</th>          <td>${props.CON_VIAJE}</td></tr>
@@ -786,7 +786,7 @@ class PVUWebGIS {
                   <tr><th>Cont. embarazadas</th>  <td>${embarazadas}</td></tr>
                 </table>
 
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5 mt-2">Demografía</h4>
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5 mt-2 text-left">Demografía</h4>
                 <table class="info-table">
                   <tr><th>Femenino / Masculino</th> <td>${props.FEMENINO} / ${props.MASCULINO}</td></tr>
                   <tr><th>Menores de 5</th>          <td>${props.MENORES_5}</td></tr>
@@ -794,14 +794,14 @@ class PVUWebGIS {
                   <tr><th>Edad mediana</th>           <td>${props.EDAD_MEDIANA} años (${props.EDAD_MIN}–${props.EDAD_MAX})</td></tr>
                 </table>
 
-                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5 mt-2">Temporalidad</h4>
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5 mt-2 text-left">Temporalidad</h4>
                 <table class="info-table">
                   <tr><th>Primer caso</th>   <td>${props.PRIMER_CASO}</td></tr>
                   <tr><th>Último caso</th>   <td>${props.ULTIMO_CASO}</td></tr>
                   <tr><th>Semanas epi</th>   <td>${props.SEM_EPI_INICIO} – ${props.SEM_EPI_ULTIMO}</td></tr>
                 </table>
 
-                <div class="text-[9px] text-slate-400 text-right pt-2 border-t border-slate-100">
+                <div class="text-[9px] text-slate-400 text-left pt-2 border-t border-slate-100">
                   Fuente: SINAVE · Actualización: 19/Feb/2026
                 </div>
 
