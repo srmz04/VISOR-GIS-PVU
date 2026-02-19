@@ -387,16 +387,17 @@ class PVUWebGIS {
         };
 
         if (layerId === 'sarampion_notificacion' || layerId === 'sarampion_mun_residencia') {
-            // [MOD] Etiqueta dual: Conteo Grande + Nombre Pequeño
+            // Etiqueta epidemio: número grande + nombre municipio
             layout['text-field'] = [
                 'format',
-                ['to-string', ['get', 'CASOS_CONFIRMADOS']], { 'font-scale': 1.5 },
+                ['to-string', ['get', 'CASOS_CONFIRMADOS']], { 'font-scale': 1.8 },
                 '\n', {},
-                ['get', 'NOM_MUN'], { 'font-scale': 0.8 }
+                ['get', 'NOM_MUN'], { 'font-scale': 0.85 }
             ];
-            // Centrar etiqueta en el polígono
             layout['text-anchor'] = 'center';
             layout['text-offset'] = [0, 0];
+            layout['text-size'] = 14;
+            layout['text-allow-overlap'] = true;
         } else {
             // Etiqueta estándar
             // Para polígonos (Urbano) usamos CVE_AGEB, para puntos (Rural) usamos NOMLOC
@@ -404,12 +405,17 @@ class PVUWebGIS {
             layout['text-field'] = ['coalesce', ['get', labelField], ['get', 'CVE_AGEB'], ['get', 'NOM_LOC'], ['get', 'NOMLOC'], ''];
         }
 
+        const isEpidemio = config.grupo === 'EPIDEMIO';
         const layerDef = {
             id: `${layerId}-label`,
             type: 'symbol',
             source: source,
             layout: layout,
-            paint: {
+            paint: isEpidemio ? {
+                'text-color': '#1a1a1a',
+                'text-halo-color': '#ffffff',
+                'text-halo-width': 2
+            } : {
                 'text-color': '#ffffff',
                 'text-halo-color': '#000000',
                 'text-halo-width': 1.5
