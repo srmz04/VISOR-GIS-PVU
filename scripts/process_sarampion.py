@@ -46,6 +46,8 @@ def process_data():
         })
     )
     nom_mpo['CVE_MUN_KEY'] = nom_mpo['CVE_MUN_KEY'].astype(int)
+    # Limpiar espacios del nombre que vienen en el CSV
+    nom_mpo['NOM_MUN'] = nom_mpo['NOM_MUN'].astype(str).str.strip().str.title()
     conteo = conteo.merge(nom_mpo, on='CVE_MUN_KEY', how='left')
     print("Top 5:", conteo.head().to_string())
 

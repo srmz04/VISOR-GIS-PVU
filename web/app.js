@@ -20,7 +20,7 @@ class PVUWebGIS {
         this.map = null;
         this.activeLayers = {};
         this.layerStates = {};
-        this.showLabels = false;
+        this.showLabels = true;
         this.opacity = 0.8;
         this.popup = null;
         this.sourceLoaded = false;
@@ -218,8 +218,10 @@ class PVUWebGIS {
                     }
                 });
 
-                // Capa de etiquetas (opcional)
-                if (this.showLabels) {
+                // Etiquetas: siempre para capas EPIDEMIO (son datos cuantitativos),
+                // para el resto, solo si el toggle de etiquetas está activo
+                const cfg = CONFIG.layers[layerId];
+                if (cfg.grupo === 'EPIDEMIO' || this.showLabels) {
                     this.addLabelLayer(layerId, sourceLayer, 'Polygon');
                 }
             } else {
@@ -238,7 +240,8 @@ class PVUWebGIS {
                     }
                 });
 
-                if (this.showLabels) {
+                const cfgPt = CONFIG.layers[layerId];
+                if (cfgPt.grupo === 'EPIDEMIO' || this.showLabels) {
                     this.addLabelLayer(layerId, sourceLayer, 'Point');
                 }
             }
