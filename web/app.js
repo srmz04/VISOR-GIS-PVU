@@ -386,7 +386,7 @@ class PVUWebGIS {
             'text-allow-overlap': false
         };
 
-        if (layerId === 'sarampion_notificacion') {
+        if (layerId === 'sarampion_notificacion' || layerId === 'sarampion_mun_residencia') {
             // [MOD] Etiqueta dual: Conteo Grande + Nombre Pequeño
             layout['text-field'] = [
                 'format',

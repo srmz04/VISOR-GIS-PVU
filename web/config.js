@@ -110,6 +110,24 @@ const CONFIG = {
             }
         },
 
+        'sarampion_mun_residencia': {
+            source: 'sarampion-residencia-source',
+            sourceLayer: 'sarampion_mun_residencia',
+            nombre: 'Municipio de Residencia',
+            color: '#E53E3E',
+            borderColor: '#C53030',
+            grupo: 'EPIDEMIO',
+            geometria: 'Polygon',
+            defaultActive: false,
+            orden: 2,
+            autoZoom: true,
+            bounds: [-105.572474, 22.345084, -103.318588, 25.887997],
+            sourceDef: {
+                type: 'vector',
+                url: 'pmtiles://./data/sarampion_mun_residencia.pmtiles'
+            }
+        },
+
         // ─────────────────────────────────────────────────
         // MODO RURAL: Puntos de localidades
         // ─────────────────────────────────────────────────
