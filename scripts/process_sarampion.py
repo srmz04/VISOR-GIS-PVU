@@ -69,8 +69,67 @@ def process_data():
         conteo['HOSPITALIZADOS'] = 0
         print('[WARN] Columna HOSP no encontrada en el CSV')
 
-    print("Top 5:", conteo.head().to_string())
+    # 4c. Agregar variables clínicas y demográficas para el popup
+    # Vacunación (CTA_VAC_SAR: 1=Si, 2=No. CTAS_DOS = número de dosis)
+    def agg_vacunas(x):
+        sin_vacuna = (x['CTA_VAC_SAR'] == 2).sum()
+        una_dosis = (x['CTAS_DOS'] == 1).sum()
+        dos_dosis = (x['CTAS_DOS'] == 2).sum()
+        return pd.Series({'SIN_VACUNA': sin_vacuna, 'UNA_DOSIS': una_dosis, 'DOS_DOSIS': dos_dosis})
 
+    vacunas = confirmados.groupby('CVE_MPO_NOTIFICANTE').apply(agg_vacunas).reset_index()
+    vacunas.rename(columns={'CVE_MPO_NOTIFICANTE': 'CVE_MUN_KEY'}, inplace=True)
+    conteo = conteo.merge(vacunas, on='CVE_MUN_KEY', how='left')
+
+    # Demografía (IDE_SEX: 1=H, 2=M. IDE_EDA_ANO = edad)
+    def agg_demo(x):
+        fem = (x['IDE_SEX'] == 2).sum()
+        masc = (x['IDE_SEX'] == 1).sum()
+        menores_5 = (x['IDE_EDA_ANO'] < 5).sum()
+        menores_15 = (x['IDE_EDA_ANO'] < 15).sum()
+        edad_mediana = round(x['IDE_EDA_ANO'].median(), 1) if not x['IDE_EDA_ANO'].empty else 0
+        edad_min = int(x['IDE_EDA_ANO'].min()) if not x['IDE_EDA_ANO'].empty else 0
+        edad_max = int(x['IDE_EDA_ANO'].max()) if not x['IDE_EDA_ANO'].empty else 0
+        return pd.Series({
+            'FEMENINO': fem, 'MASCULINO': masc, 
+            'MENORES_5': menores_5, 'MENORES_15': menores_15,
+            'EDAD_MEDIANA': edad_mediana, 'EDAD_MIN': edad_min, 'EDAD_MAX': edad_max
+        })
+
+    demo = confirmados.groupby('CVE_MPO_NOTIFICANTE').apply(agg_demo).reset_index()
+    demo.rename(columns={'CVE_MPO_NOTIFICANTE': 'CVE_MUN_KEY'}, inplace=True)
+    conteo = conteo.merge(demo, on='CVE_MUN_KEY', how='left')
+
+    # Porcentaje sin vacuna (derivado)
+    conteo['PCT_SIN_VACUNA'] = (conteo['SIN_VACUNA'] / conteo['CASOS_CONFIRMADOS'] * 100).round(1)
+
+    # 4d. Temporalidad
+    def agg_tiempo(x):
+        # Convertir a datetime omitiendo nulos
+        fechas = pd.to_datetime(x['FEC_INI_EXANT'], errors='coerce').dropna()
+        if len(fechas) > 0:
+            primer_caso = fechas.min().strftime('%d/%m/%Y')
+            ultimo_caso = fechas.max().strftime('%d/%m/%Y')
+        else:
+            primer_caso, ultimo_caso = '—', '—'
+        
+        semanas = pd.to_numeric(x['SEMANA'], errors='coerce').dropna()
+        if len(semanas) > 0:
+            sem_inicio = int(semanas.min())
+            sem_ultimo = int(semanas.max())
+        else:
+            sem_inicio, sem_ultimo = 0, 0
+            
+        return pd.Series({
+            'PRIMER_CASO': primer_caso, 'ULTIMO_CASO': ultimo_caso,
+            'SEM_EPI_INICIO': sem_inicio, 'SEM_EPI_ULTIMO': sem_ultimo
+        })
+
+    tiempo = confirmados.groupby('CVE_MPO_NOTIFICANTE').apply(agg_tiempo).reset_index()
+    tiempo.rename(columns={'CVE_MPO_NOTIFICANTE': 'CVE_MUN_KEY'}, inplace=True)
+    conteo = conteo.merge(tiempo, on='CVE_MUN_KEY', how='left')
+
+    print("Top 5:", conteo.head().to_string())
     # 5. Cargar shapefile
     try:
         gdf = gpd.read_file(SHP_PATH)
@@ -110,7 +169,21 @@ def process_data():
     elif 'NOM_MUN_x' in gdf_final.columns:
         gdf_final = gdf_final.rename(columns={'NOM_MUN_x': 'NOM_MUN'})
 
-    cols_exportar = ['geometry', 'CVE_MUN', 'NOM_MUN', 'CASOS_CONFIRMADOS', 'HOSPITALIZADOS']
+    cols_exportar = [
+        'geometry', 'CVE_MUN', 'NOM_MUN', 'CASOS_CONFIRMADOS', 'HOSPITALIZADOS',
+        'SIN_VACUNA', 'UNA_DOSIS', 'DOS_DOSIS', 'PCT_SIN_VACUNA',
+        'FEMENINO', 'MASCULINO', 'MENORES_5', 'MENORES_15', 
+        'EDAD_MEDIANA', 'EDAD_MIN', 'EDAD_MAX',
+        'PRIMER_CASO', 'ULTIMO_CASO', 'SEM_EPI_INICIO', 'SEM_EPI_ULTIMO'
+    ]
+    
+    # Algunas variables dummy para que el popup de HTML actual no rompa (ya que no las tenemos)
+    gdf_final['CON_CONTACTO'] = '—'
+    gdf_final['CON_VIAJE'] = '—'
+    gdf_final['DESTINO_VIAJE'] = '—'
+    gdf_final['CONT_EMBARAZADA'] = 0
+    cols_exportar.extend(['CON_CONTACTO', 'CON_VIAJE', 'DESTINO_VIAJE', 'CONT_EMBARAZADA'])
+    
     gdf_final[cols_exportar].to_file(OUTPUT_GEO, driver='GeoJSON')
     print(f"GeoJSON guardado: {OUTPUT_GEO}")
 
