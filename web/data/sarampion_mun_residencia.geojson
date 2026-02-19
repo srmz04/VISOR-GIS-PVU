@@ -7048,9 +7048,6 @@
       },
       "properties": {
         "CASOS_CONFIRMADOS": 2,
-        "CONFIRMADOS": 1,
-        "EN_ESTUDIO": 1,
-        "DESCARTADOS": 0,
         "SIN_VACUNA": 2,
         "UNA_DOSIS": 0,
         "DOS_DOSIS": 0,
@@ -35481,9 +35478,6 @@
       },
       "properties": {
         "CASOS_CONFIRMADOS": 25,
-        "CONFIRMADOS": 7,
-        "EN_ESTUDIO": 18,
-        "DESCARTADOS": 0,
         "SIN_VACUNA": 25,
         "UNA_DOSIS": 0,
         "DOS_DOSIS": 0,
@@ -46630,9 +46624,6 @@
       },
       "properties": {
         "CASOS_CONFIRMADOS": 29,
-        "CONFIRMADOS": 15,
-        "EN_ESTUDIO": 9,
-        "DESCARTADOS": 4,
         "SIN_VACUNA": 19,
         "UNA_DOSIS": 9,
         "DOS_DOSIS": 1,
@@ -48875,9 +48866,6 @@
       },
       "properties": {
         "CASOS_CONFIRMADOS": 1,
-        "CONFIRMADOS": 1,
-        "EN_ESTUDIO": 0,
-        "DESCARTADOS": 0,
         "SIN_VACUNA": 1,
         "UNA_DOSIS": 0,
         "DOS_DOSIS": 0,

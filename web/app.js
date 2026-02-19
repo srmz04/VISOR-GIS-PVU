@@ -755,10 +755,7 @@ class PVUWebGIS {
               <div class="space-y-3 text-xs">
 
                 <table class="info-table">
-                  <tr><th>Total positivos</th>   <td><strong>${props.CASOS_CONFIRMADOS}</strong></td></tr>
-                  <tr><th>Confirmados</th>        <td>${props.CONFIRMADOS}</td></tr>
-                  <tr><th>En estudio</th>         <td>${props.EN_ESTUDIO}</td></tr>
-                  <tr><th>Descartados</th>        <td>${props.DESCARTADOS}</td></tr>
+                  <tr><th>Casos positivos</th>   <td><strong>${props.CASOS_CONFIRMADOS}</strong></td></tr>
                 </table>
 
                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5">Vacunación</h4>
