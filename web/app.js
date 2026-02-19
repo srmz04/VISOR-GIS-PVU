@@ -744,6 +744,56 @@ class PVUWebGIS {
     }
 
     formatFeatureInfo(props) {
+        // ── Tarjeta epidemiológica ──────────────────────────────────────────
+        if (props.CASOS_CONFIRMADOS !== undefined) {
+            const pct = props.PCT_SIN_VACUNA !== null ? `${props.PCT_SIN_VACUNA}%` : '—';
+            const destino = props.DESTINO_VIAJE || 'Sin antecedente';
+            const embarazadas = props.CONT_EMBARAZADA > 0
+                ? `<span class="text-orange-600 font-semibold">${props.CONT_EMBARAZADA} casos</span>`
+                : '0 casos';
+            return `
+              <div class="space-y-3 text-xs">
+
+                <table class="info-table">
+                  <tr><th>Total positivos</th>   <td><strong>${props.CASOS_CONFIRMADOS}</strong></td></tr>
+                  <tr><th>Confirmados</th>        <td>${props.CONFIRMADOS}</td></tr>
+                  <tr><th>En estudio</th>         <td>${props.EN_ESTUDIO}</td></tr>
+                  <tr><th>Descartados</th>        <td>${props.DESCARTADOS}</td></tr>
+                </table>
+
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5">Vacunación</h4>
+                <table class="info-table">
+                  <tr><th>Sin vacuna</th>  <td><span class="text-red-600 font-semibold">${props.SIN_VACUNA} (${pct})</span></td></tr>
+                  <tr><th>1 dosis</th>     <td>${props.UNA_DOSIS}</td></tr>
+                  <tr><th>2 dosis</th>     <td>${props.DOS_DOSIS}</td></tr>
+                </table>
+
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5">Cadena de transmisión</h4>
+                <table class="info-table">
+                  <tr><th>Con contacto</th>      <td>${props.CON_CONTACTO}</td></tr>
+                  <tr><th>Con viaje</th>          <td>${props.CON_VIAJE}</td></tr>
+                  <tr><th>Destino</th>            <td>${destino}</td></tr>
+                  <tr><th>Cont. embarazadas</th>  <td>${embarazadas}</td></tr>
+                </table>
+
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5">Demografía</h4>
+                <table class="info-table">
+                  <tr><th>Femenino / Masculino</th> <td>${props.FEMENINO} / ${props.MASCULINO}</td></tr>
+                  <tr><th>Menores de 5</th>          <td>${props.MENORES_5}</td></tr>
+                  <tr><th>Menores de 15</th>         <td>${props.MENORES_15}</td></tr>
+                  <tr><th>Edad mediana</th>           <td>${props.EDAD_MEDIANA} años (${props.EDAD_MIN}–${props.EDAD_MAX})</td></tr>
+                </table>
+
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-0.5">Temporalidad</h4>
+                <table class="info-table">
+                  <tr><th>Primer caso</th>   <td>${props.PRIMER_CASO}</td></tr>
+                  <tr><th>Último caso</th>   <td>${props.ULTIMO_CASO}</td></tr>
+                  <tr><th>Semanas epi</th>   <td>${props.SEM_EPI_INICIO} – ${props.SEM_EPI_ULTIMO}</td></tr>
+                </table>
+
+              </div>`;
+        }
+
         // Definición de grupos de metadatos para organizar la información
         const groups = [
             {
