@@ -374,21 +374,38 @@ class PVUWebGIS {
             minzoom = 5; // Restaurar visibilidad (antes era 9)
         }
 
-        // Para polígonos (Urbano) usamos CVE_AGEB, para puntos (Rural) usamos NOMLOC
-        const labelField = geometryType === 'Point' ? 'NOMLOC' : 'CVE_AGEB';
+        // Configuración específica de texto
+        let layout = {
+            'text-font': ['Noto Sans Regular'],
+            'text-size': 11,
+            'text-anchor': 'top',
+            'text-offset': [0, 0.5],
+            'text-allow-overlap': false
+        };
+
+        if (layerId === 'sarampion_notificacion') {
+            // [MOD] Etiqueta dual: Conteo Grande + Nombre Pequeño
+            layout['text-field'] = [
+                'format',
+                ['to-string', ['get', 'CASOS_CONFIRMADOS']], { 'font-scale': 1.5, 'text-font': ['Noto Sans Bold'] },
+                '\n', {},
+                ['get', 'NOM_MUN'], { 'font-scale': 0.8 }
+            ];
+            // Centrar etiqueta en el polígono
+            layout['text-anchor'] = 'center';
+            layout['text-offset'] = [0, 0];
+        } else {
+            // Etiqueta estándar
+            // Para polígonos (Urbano) usamos CVE_AGEB, para puntos (Rural) usamos NOMLOC
+            const labelField = geometryType === 'Point' ? 'NOMLOC' : 'CVE_AGEB';
+            layout['text-field'] = ['coalesce', ['get', labelField], ['get', 'CVE_AGEB'], ['get', 'NOM_LOC'], ['get', 'NOMLOC'], ''];
+        }
 
         const layerDef = {
             id: `${layerId}-label`,
             type: 'symbol',
             source: source,
-            layout: {
-                'text-field': ['coalesce', ['get', labelField], ['get', 'CVE_AGEB'], ['get', 'NOM_LOC'], ['get', 'NOMLOC'], ''],
-                'text-font': ['Noto Sans Regular'],
-                'text-size': 11,
-                'text-anchor': 'top',
-                'text-offset': [0, 0.5],
-                'text-allow-overlap': false
-            },
+            layout: layout,
             paint: {
                 'text-color': '#ffffff',
                 'text-halo-color': '#000000',
@@ -495,6 +512,38 @@ class PVUWebGIS {
         });
 
         this.updateLegend();
+
+        // Auto-zoom inteligente para capas epidemiológicas
+        // Se activa solo al encender (false → true) si la capa tiene autoZoom: true
+        // Calcula la unión de bounds de TODAS las capas EPIDEMIO activas en ese momento,
+        // por lo que funciona aunque haya varias capas visibles simultáneamente.
+        if (isActive) {
+            const activeBoundsAll = Object.entries(this.layerStates)
+                .filter(([id, on]) => {
+                    const cfg = CONFIG.layers[id];
+                    return on && cfg && cfg.grupo === 'EPIDEMIO' && cfg.autoZoom && cfg.bounds;
+                })
+                .map(([id]) => CONFIG.layers[id].bounds);
+
+            if (activeBoundsAll.length > 0) {
+                // Reducción: unión de todos los bounding boxes
+                const union = activeBoundsAll.reduce((acc, b) => [
+                    Math.min(acc[0], b[0]),  // minLng
+                    Math.min(acc[1], b[1]),  // minLat
+                    Math.max(acc[2], b[2]),  // maxLng
+                    Math.max(acc[3], b[3])   // maxLat
+                ]);
+
+                // padding proporcional para dejar aire alrededor de los polígonos
+                this.map.fitBounds(union, {
+                    padding: { top: 80, bottom: 80, left: 80, right: 80 },
+                    maxZoom: 10,   // no acercarse más de zoom 10 aunque los datos sean muy pequeños
+                    duration: 800   // animación suave
+                });
+
+                Logger.info('MapController', 'Auto-zoom EPIDEMIO activado', { union, capas: activeBoundsAll.length });
+            }
+        }
     }
 
     removeAllLayers() {

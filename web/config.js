@@ -89,17 +89,21 @@ const CONFIG = {
         // ─────────────────────────────────────────────────
         // CAPAS EPIDEMIOLÓGICAS
         // ─────────────────────────────────────────────────
-        'sarampion_confirmados': {
+        'sarampion_notificacion': {
             source: 'sarampion-source',
             sourceLayer: 'sarampion_municipios',
-            nombre: 'Casos Sarampión',
-            color: '#FF0000', // Rojo intenso
-            borderColor: '#800000',
+            nombre: 'Municipio de Notificación',
+            color: '#FF8C00',
+            borderColor: '#CC7000',
             grupo: 'EPIDEMIO',
             geometria: 'Polygon',
             defaultActive: false,
             orden: 1,
-            // Source definition for local loading in app.js
+            // Al activar esta capa, el mapa hace fitBounds al extent del dataset
+            autoZoom: true,
+            // Bounds calculados automáticamente por el ETL (process_sarampion.py)
+            // Formato: [minLng, minLat, maxLng, maxLat]
+            bounds: [-105.572619, 23.397503, -103.260825, 26.754918],
             sourceDef: {
                 type: 'vector',
                 url: 'pmtiles://./data/sarampion_municipios.pmtiles'
