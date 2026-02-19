@@ -9,18 +9,6 @@
     "total": 65,
     "municipios": 6,
     "fuente": "EFES — clasificación CONFIRMADO",
-    "generado": "2026-02-19T00:12:33.810358"
-  },
-  "sarampion_mun_residencia": {
-    "bounds": [
-      -105.572474,
-      22.345084,
-      -103.318588,
-      25.887997
-    ],
-    "total": 57,
-    "municipios": 4,
-    "fuente": "EFES — DES_RESULTADO3 = POSITIVO, año 2026",
-    "generado": "2026-02-19T00:00:00.000000"
+    "generado": "2026-02-19T15:58:45.558254"
   }
 }

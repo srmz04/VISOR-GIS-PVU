@@ -6,7 +6,7 @@ import json
 
 # ─── Rutas ───────────────────────────────────────────────────────────────────
 BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CSV_PATH   = os.path.join(BASE_DIR, 'VISOR-EPI/BDEFES_10_18-2-2026/EFES.csv')
+CSV_PATH   = os.path.join(BASE_DIR, 'VISOR-EPI/EFES19.2.26.csv')
 SHP_PATH   = os.path.join(BASE_DIR, '_geodata/Marco_Geoestadistico/Municipios.shp')
 OUTPUT_GEO = os.path.join(BASE_DIR, 'web/data/sarampion_municipios.geojson')
 META_PATH  = os.path.join(BASE_DIR, 'web/data/epidemio_meta.json')
@@ -49,6 +49,26 @@ def process_data():
     # Limpiar espacios del nombre que vienen en el CSV
     nom_mpo['NOM_MUN'] = nom_mpo['NOM_MUN'].astype(str).str.strip().str.title()
     conteo = conteo.merge(nom_mpo, on='CVE_MUN_KEY', how='left')
+
+    # 4b. Hospitalizados actuales por municipio (HOSP == 1)
+    # La columna HOSP: 1 = hospitalizado, 2 = no hospitalizado
+    if 'HOSP' in confirmados.columns:
+        hosp = (
+            confirmados[confirmados['HOSP'] == 1]
+            .groupby('CVE_MPO_NOTIFICANTE')
+            .size()
+            .reset_index(name='HOSPITALIZADOS')
+        )
+        hosp['CVE_MPO_NOTIFICANTE'] = hosp['CVE_MPO_NOTIFICANTE'].astype(int)
+        conteo = conteo.merge(
+            hosp.rename(columns={'CVE_MPO_NOTIFICANTE': 'CVE_MUN_KEY'}),
+            on='CVE_MUN_KEY', how='left'
+        )
+        conteo['HOSPITALIZADOS'] = conteo['HOSPITALIZADOS'].fillna(0).astype(int)
+    else:
+        conteo['HOSPITALIZADOS'] = 0
+        print('[WARN] Columna HOSP no encontrada en el CSV')
+
     print("Top 5:", conteo.head().to_string())
 
     # 5. Cargar shapefile
@@ -90,7 +110,7 @@ def process_data():
     elif 'NOM_MUN_x' in gdf_final.columns:
         gdf_final = gdf_final.rename(columns={'NOM_MUN_x': 'NOM_MUN'})
 
-    cols_exportar = ['geometry', 'CVE_MUN', 'NOM_MUN', 'CASOS_CONFIRMADOS']
+    cols_exportar = ['geometry', 'CVE_MUN', 'NOM_MUN', 'CASOS_CONFIRMADOS', 'HOSPITALIZADOS']
     gdf_final[cols_exportar].to_file(OUTPUT_GEO, driver='GeoJSON')
     print(f"GeoJSON guardado: {OUTPUT_GEO}")
 
