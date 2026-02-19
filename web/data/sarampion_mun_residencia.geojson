@@ -7047,9 +7047,31 @@
         ]
       },
       "properties": {
+        "CASOS_CONFIRMADOS": 2,
+        "CONFIRMADOS": 1,
+        "EN_ESTUDIO": 1,
+        "DESCARTADOS": 0,
+        "SIN_VACUNA": 2,
+        "UNA_DOSIS": 0,
+        "DOS_DOSIS": 0,
+        "PCT_SIN_VACUNA": 100.0,
+        "PRIMER_CASO": "2026-01-26",
+        "ULTIMO_CASO": "2026-02-14",
+        "SEM_EPI_INICIO": 5,
+        "SEM_EPI_ULTIMO": 7,
+        "CON_CONTACTO": 1,
+        "CON_VIAJE": 0,
+        "DESTINO_VIAJE": null,
+        "CONT_EMBARAZADA": 0,
+        "MASCULINO": 0,
+        "FEMENINO": 2,
+        "MENORES_5": 2,
+        "MENORES_15": 2,
+        "EDAD_MEDIANA": 0.5,
+        "EDAD_MIN": 0,
+        "EDAD_MAX": 1,
         "CVE_MUN": "007",
-        "NOM_MUN": "Gómez Palacio",
-        "CASOS_CONFIRMADOS": 2
+        "NOM_MUN": "Gómez Palacio"
       }
     },
     {
@@ -35458,9 +35480,31 @@
         ]
       },
       "properties": {
+        "CASOS_CONFIRMADOS": 25,
+        "CONFIRMADOS": 7,
+        "EN_ESTUDIO": 18,
+        "DESCARTADOS": 0,
+        "SIN_VACUNA": 25,
+        "UNA_DOSIS": 0,
+        "DOS_DOSIS": 0,
+        "PCT_SIN_VACUNA": 100.0,
+        "PRIMER_CASO": "2026-01-09",
+        "ULTIMO_CASO": "2026-02-10",
+        "SEM_EPI_INICIO": 2,
+        "SEM_EPI_ULTIMO": 7,
+        "CON_CONTACTO": 25,
+        "CON_VIAJE": 25,
+        "DESTINO_VIAJE": "Sinaloa",
+        "CONT_EMBARAZADA": 19,
+        "MASCULINO": 14,
+        "FEMENINO": 11,
+        "MENORES_5": 6,
+        "MENORES_15": 16,
+        "EDAD_MEDIANA": 11.0,
+        "EDAD_MIN": 1,
+        "EDAD_MAX": 33,
         "CVE_MUN": "014",
-        "NOM_MUN": "Mezquital",
-        "CASOS_CONFIRMADOS": 25
+        "NOM_MUN": "Mezquital"
       }
     },
     {
@@ -46585,9 +46629,31 @@
         ]
       },
       "properties": {
+        "CASOS_CONFIRMADOS": 29,
+        "CONFIRMADOS": 15,
+        "EN_ESTUDIO": 9,
+        "DESCARTADOS": 4,
+        "SIN_VACUNA": 19,
+        "UNA_DOSIS": 9,
+        "DOS_DOSIS": 1,
+        "PCT_SIN_VACUNA": 65.5,
+        "PRIMER_CASO": "2026-01-15",
+        "ULTIMO_CASO": "2026-02-15",
+        "SEM_EPI_INICIO": 3,
+        "SEM_EPI_ULTIMO": 8,
+        "CON_CONTACTO": 11,
+        "CON_VIAJE": 5,
+        "DESTINO_VIAJE": "Durango",
+        "CONT_EMBARAZADA": 2,
+        "MASCULINO": 10,
+        "FEMENINO": 19,
+        "MENORES_5": 2,
+        "MENORES_15": 18,
+        "EDAD_MEDIANA": 10.5,
+        "EDAD_MIN": 0,
+        "EDAD_MAX": 48,
         "CVE_MUN": "005",
-        "NOM_MUN": "Durango",
-        "CASOS_CONFIRMADOS": 29
+        "NOM_MUN": "Durango"
       }
     },
     {
@@ -48808,9 +48874,31 @@
         ]
       },
       "properties": {
+        "CASOS_CONFIRMADOS": 1,
+        "CONFIRMADOS": 1,
+        "EN_ESTUDIO": 0,
+        "DESCARTADOS": 0,
+        "SIN_VACUNA": 1,
+        "UNA_DOSIS": 0,
+        "DOS_DOSIS": 0,
+        "PCT_SIN_VACUNA": 100.0,
+        "PRIMER_CASO": "2026-01-29",
+        "ULTIMO_CASO": "2026-01-29",
+        "SEM_EPI_INICIO": 5,
+        "SEM_EPI_ULTIMO": 5,
+        "CON_CONTACTO": 1,
+        "CON_VIAJE": 0,
+        "DESTINO_VIAJE": null,
+        "CONT_EMBARAZADA": 0,
+        "MASCULINO": 0,
+        "FEMENINO": 1,
+        "MENORES_5": 0,
+        "MENORES_15": 0,
+        "EDAD_MEDIANA": 26,
+        "EDAD_MIN": 26,
+        "EDAD_MAX": 26,
         "CVE_MUN": "038",
-        "NOM_MUN": "Vicente Guerrero",
-        "CASOS_CONFIRMADOS": 1
+        "NOM_MUN": "Vicente Guerrero"
       }
     }
   ]
