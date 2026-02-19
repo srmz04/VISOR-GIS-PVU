@@ -390,7 +390,7 @@ class PVUWebGIS {
             // [MOD] Etiqueta dual: Conteo Grande + Nombre Pequeño
             layout['text-field'] = [
                 'format',
-                ['to-string', ['get', 'CASOS_CONFIRMADOS']], { 'font-scale': 1.5, 'text-font': ['literal', ['Noto Sans Bold']] },
+                ['to-string', ['get', 'CASOS_CONFIRMADOS']], { 'font-scale': 1.5 },
                 '\n', {},
                 ['get', 'NOM_MUN'], { 'font-scale': 0.8 }
             ];
