@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Combustible — Durango a Huazamotita</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+
+    header {
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    header a {
+      color: #60a5fa; text-decoration: none; font-size: .875rem;
+    }
+    header a:hover { text-decoration: underline; }
+    h1 { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
+    .subtitle { font-size: .8rem; color: #94a3b8; margin-top: .15rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      max-width: 1100px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: .75rem;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .card-title {
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #64748b;
+      margin-bottom: .9rem;
+    }
+
+    /* Route card */
+    .loc-row { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .6rem; }
+    .loc-icon {
+      width: 2rem; height: 2rem; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0; margin-top: .1rem;
+    }
+    .loc-icon.origin  { background: #1d4ed8; }
+    .loc-icon.dest    { background: #b91c1c; }
+    .loc-label { font-weight: 600; font-size: .95rem; }
+    .loc-meta  { font-size: .75rem; color: #94a3b8; margin-top: .15rem; }
+
+    .route-connector {
+      margin-left: .9rem; border-left: 2px dashed #334155;
+      height: 1.2rem; margin-bottom: .4rem;
+    }
+
+    /* Stats */
+    .stat-row { display: flex; justify-content: space-between; align-items: baseline; padding: .45rem 0; border-bottom: 1px solid #1e293b; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-size: .8rem; color: #94a3b8; }
+    .stat-value { font-size: .95rem; font-weight: 600; color: #f1f5f9; }
+    .stat-value.highlight { color: #34d399; font-size: 1.1rem; }
+    .stat-value.warn     { color: #fbbf24; }
+
+    /* Scenarios table */
+    .scenarios-table { width: 100%; border-collapse: collapse; font-size: .8rem; margin-top: .5rem; }
+    .scenarios-table th {
+      font-size: .7rem; font-weight: 600; color: #64748b;
+      text-transform: uppercase; letter-spacing: .05em;
+      padding: .4rem .5rem; text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    .scenarios-table th:not(:first-child) { text-align: right; }
+    .scenarios-table td {
+      padding: .55rem .5rem; border-bottom: 1px solid #1e293b; vertical-align: middle;
+    }
+    .scenarios-table td:not(:first-child) { text-align: right; }
+    .scenarios-table tr:last-child td { border-bottom: none; }
+    .scenarios-table .badge {
+      display: inline-block; font-size: .65rem; font-weight: 600;
+      padding: .1rem .4rem; border-radius: 9999px; vertical-align: middle;
+    }
+    .badge-optimista { background: #1e3a5f; color: #60a5fa; }
+    .badge-realista  { background: #1c3a2e; color: #34d399; }
+    .badge-recomend  { background: #1c3a2e; color: #34d399; }
+    .badge-premium   { background: #3b1f5e; color: #c084fc; }
+    .cost-mxn { font-weight: 700; color: #f1f5f9; }
+    .cost-usd { font-size: .7rem; color: #64748b; }
+
+    /* API result badge */
+    .api-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .7rem; padding: .25rem .6rem; border-radius: 9999px;
+      margin-bottom: .75rem;
+    }
+    .api-badge.success { background: #1c3a2e; color: #34d399; border: 1px solid #166534; }
+    .api-badge.fallback { background: #3b2a00; color: #fbbf24; border: 1px solid #92400e; }
+    .api-badge.loading  { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+    .dot { width: .5rem; height: .5rem; border-radius: 50%; }
+    .dot.green  { background: #34d399; }
+    .dot.yellow { background: #fbbf24; }
+    .dot.gray   { background: #64748b; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* Vehicle card */
+    .vehicle-name { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: .25rem; }
+    .vehicle-meta { font-size: .75rem; color: #94a3b8; margin-bottom: .9rem; }
+    .spec-row { display: flex; justify-content: space-between; padding: .3rem 0;
+                font-size: .8rem; border-bottom: 1px solid #1e293b; }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-label { color: #94a3b8; }
+    .spec-value { font-weight: 500; }
+
+    /* Calc button */
+    .btn-calc {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: #1d4ed8; color: #fff; border: none; cursor: pointer;
+      font-family: inherit; font-size: .85rem; font-weight: 600;
+      padding: .6rem 1.25rem; border-radius: .5rem;
+      margin-top: 1rem; transition: background .15s;
+    }
+    .btn-calc:hover  { background: #2563eb; }
+    .btn-calc:active { background: #1e40af; }
+
+    /* Progress bar */
+    .progress-wrap { margin-top: .5rem; height: .35rem; background: #1e293b; border-radius: 9999px; overflow: hidden; }
+    .progress-bar  { height: 100%; background: linear-gradient(90deg, #1d4ed8, #60a5fa); border-radius: 9999px;
+                     transition: width .5s ease; }
+
+    .disclaimer {
+      margin-top: 1.5rem; max-width: 1100px;
+      font-size: .72rem; color: #475569; line-height: 1.6;
+      border-top: 1px solid #1e293b; padding-top: .75rem;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⛽ Calculadora de Combustible</h1>
+    <div class="subtitle">Red Nacional de Caminos INEGI · API SAKBÉ v3.1 · Silverado 2018</div>
+  </div>
+  <a href="index.html">← Volver al Visor</a>
+</header>
+
+<div class="grid">
+
+  <!-- Ruta -->
+  <div class="card">
+    <div class="card-title">Ruta</div>
+
+    <div id="apiBadge" class="api-badge loading">
+      <span class="dot gray"></span>
+      <span id="apiBadgeText">Consultando SAKBÉ…</span>
+    </div>
+
+    <div class="loc-row">
+      <div class="loc-icon origin">🔵</div>
+      <div>
+        <div class="loc-label">Victoria de Durango</div>
+        <div class="loc-meta">Capital del Estado · 24.0277°N 104.6532°O</div>
+      </div>
+    </div>
+    <div class="route-connector"></div>
+    <div class="loc-row">
+      <div class="loc-icon dest">🔴</div>
+      <div>
+        <div class="loc-label">Huazamotita</div>
+        <div class="loc-meta">Mun. Mezquital · CVE 100140408 · 22.6945°N 104.6264°O</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <div class="stat-row">
+        <span class="stat-label">Distancia ida</span>
+        <span class="stat-value" id="distIda">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Distancia <strong>ida y vuelta</strong></span>
+        <span class="stat-value highlight" id="distRT">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Tiempo estimado total (RT)</span>
+        <span class="stat-value" id="tiempoRT">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Línea recta (referencia)</span>
+        <span class="stat-value" id="distLinea">148.3 km</span>
+      </div>
+    </div>
+
+    <button class="btn-calc" id="btnCalc" onclick="calcularRuta()">
+      🛰️ Recalcular con SAKBÉ
+    </button>
+
+    <div class="progress-wrap" style="margin-top:.75rem;">
+      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Vehículo -->
+  <div class="card">
+    <div class="card-title">Vehículo</div>
+    <div class="vehicle-name">Chevrolet Silverado 1500 2018</div>
+    <div class="vehicle-meta">Motor 5.3L V8 EcoTec3 · Tracción 4WD · Gasolina Magna</div>
+    <div class="spec-row"><span class="spec-label">Rendimiento ciudad (EPA)</span><span class="spec-value">17 MPG · 13.8 L/100km</span></div>
+    <div class="spec-row"><span class="spec-label">Rendimiento carretera (EPA)</span><span class="spec-value">23 MPG · 10.2 L/100km</span></div>
+    <div class="spec-row"><span class="spec-label">Rendimiento combinado (EPA)</span><span class="spec-value">20 MPG · 11.8 L/100km</span></div>
+    <div class="spec-row"><span class="spec-label">Sierra Madre (estimado real)</span><span class="spec-value warn">≈ 14.5 L/100km</span></div>
+    <div class="spec-row"><span class="spec-label">Capacidad tanque</span><span class="spec-value">98 litros</span></div>
+    <div style="margin-top:1rem;">
+      <div class="spec-row"><span class="spec-label">Precio Magna (ref. Durango)</span><span class="spec-value highlight">$<span id="preciomagna">23.50</span> MXN/L</span></div>
+      <div class="spec-row"><span class="spec-label">Precio Premium (ref.)</span><span class="spec-value">$25.20 MXN/L</span></div>
+    </div>
+    <div style="margin-top:.75rem;">
+      <label style="font-size:.75rem;color:#94a3b8;">Ajustar precio Magna (MXN/L):</label>
+      <input type="number" id="precioinput" value="23.50" min="15" max="35" step="0.10"
+        oninput="actualizarPrecio(this.value)"
+        style="margin-top:.35rem;width:100%;background:#0f172a;border:1px solid #334155;
+               border-radius:.4rem;color:#f1f5f9;font-size:.9rem;padding:.35rem .6rem;font-family:inherit;">
+    </div>
+  </div>
+
+  <!-- Escenarios -->
+  <div class="card full-width">
+    <div class="card-title">Escenarios de Costo — Ida y Vuelta</div>
+    <table class="scenarios-table">
+      <thead>
+        <tr>
+          <th>Escenario</th>
+          <th>L/100km</th>
+          <th>Litros totales</th>
+          <th>Costo MXN</th>
+          <th>Ref. USD</th>
+          <th>% tanque</th>
+        </tr>
+      </thead>
+      <tbody id="scenariosBody">
+        <tr><td colspan="6" style="text-align:center;color:#475569;padding:1.5rem;">Calculando…</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:.75rem;font-size:.72rem;color:#475569;">
+      Tipo de cambio referencia: $17.20 MXN/USD
+    </div>
+  </div>
+
+</div>
+
+<div class="disclaimer">
+  <strong>Notas técnicas:</strong>
+  Coordenadas de las localidades extraídas del GeoJSON <code>RUR_SSD_JURISDICCION.geojson</code> del proyecto VISOR-GIS-PVU.
+  La distancia en ruta se obtiene mediante la API SAKBÉ v3.1 de INEGI (Red Nacional de Caminos).
+  Si la API no está disponible, se usa una estimación basada en el factor de carretera serrana
+  observado para la ruta Durango–Sierra Madre Occidental (línea recta × 1.42).
+  Consumos según EPA para Silverado 2018 5.3L V8 2WD; el escenario "Sierra Madre" aplica factor
+  +23 % por pendientes, curvas cerradas y carretera de terracería en el tramo final.
+  Los precios de combustible son orientativos y pueden variar según la estación y fecha.
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CONSTANTES
+// ─────────────────────────────────────────────────────────────────────────────
+const SAKBE_TOKEN = "hFLK9fS7-97UL-QiQW-sXCL-I1aV5oYN6lbB";
+const SAKBE_URL   = "https://gaia.inegi.org.mx/sakbe_v3.1/ruta";
+
+const ORIGEN  = { nombre: "Victoria de Durango", lon: -104.6532, lat: 24.0277 };
+const DESTINO = { nombre: "Huazamotita", lon: -104.62636777831, lat: 22.69446222174849 };
+
+const SILVERADO = {
+  consumo_carretera : 10.2,
+  consumo_combinado : 11.8,
+  consumo_montaña   : 14.5,
+  tanque            : 98,
+};
+
+const TC_USD = 17.20;
+let   precioMagna = 23.50;
+let   distanciaKm = null;   // se actualiza con la API o estimación
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HAVERSINE
+// ─────────────────────────────────────────────────────────────────────────────
+function haversineKm(lon1, lat1, lon2, lat2) {
+  const R = 6371;
+  const phi1 = lat1 * Math.PI / 180, phi2 = lat2 * Math.PI / 180;
+  const dphi = (lat2 - lat1) * Math.PI / 180;
+  const dlam = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dphi/2)**2 + Math.cos(phi1)*Math.cos(phi2)*Math.sin(dlam/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API SAKBÉ
+// ─────────────────────────────────────────────────────────────────────────────
+async function consultarSAKBE() {
+  const params = new URLSearchParams({
+    token:   SAKBE_TOKEN,
+    origen:  `${ORIGEN.lon},${ORIGEN.lat}`,
+    destino: `${DESTINO.lon},${DESTINO.lat}`,
+    tipo:    "0",
+  });
+  const url = `${SAKBE_URL}?${params}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+
+function parseSAKBE(data) {
+  let distKm = null, tiempoMin = null;
+
+  // Distancia
+  for (const k of ["distancia","distancia_m","length","distance","distancia_km"]) {
+    if (data[k] !== undefined) {
+      const v = parseFloat(data[k]);
+      if (!isNaN(v)) {
+        distKm = v > 1000 ? v / 1000 : v;   // metros → km si es grande
+        break;
+      }
+    }
+  }
+
+  // Tiempo
+  for (const k of ["tiempo","tiempo_min","duration","time"]) {
+    if (data[k] !== undefined) {
+      const v = parseFloat(data[k]);
+      if (!isNaN(v)) { tiempoMin = v; break; }
+    }
+  }
+
+  return { distKm, tiempoMin };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────────────────
+function renderRuta(distIda, tiempoIdaMin, fuenteAPI) {
+  distanciaKm = distIda;
+  const distRT = distIda * 2;
+  const tiempoRT = tiempoIdaMin ? tiempoIdaMin * 2 : (distRT / 38 * 60);
+
+  document.getElementById("distIda").textContent = `${distIda.toFixed(1)} km`;
+  document.getElementById("distRT").textContent  = `${distRT.toFixed(1)} km`;
+
+  const hh = Math.floor(tiempoRT / 60), mm = Math.round(tiempoRT % 60);
+  document.getElementById("tiempoRT").textContent = `${hh}h ${String(mm).padStart(2,"0")}min`;
+
+  // Badge
+  const badge = document.getElementById("apiBadge");
+  const badgeText = document.getElementById("apiBadgeText");
+  if (fuenteAPI) {
+    badge.className = "api-badge success";
+    badge.innerHTML = '<span class="dot green"></span><span>Distancia obtenida · SAKBÉ INEGI ✓</span>';
+  } else {
+    badge.className = "api-badge fallback";
+    badge.innerHTML = '<span class="dot yellow"></span><span>Estimación (SAKBÉ no disponible · factor 1.42×)</span>';
+  }
+
+  renderEscenarios(distRT);
+}
+
+function renderEscenarios(distRT) {
+  const escenarios = [
+    { label: "Carretera federal",   badge: "optimista", consumo: SILVERADO.consumo_carretera, precio: precioMagna },
+    { label: "Combinado (EPA)",     badge: null,        consumo: SILVERADO.consumo_combinado, precio: precioMagna },
+    { label: "Sierra Madre — real", badge: "realista",  consumo: SILVERADO.consumo_montaña,  precio: precioMagna },
+    { label: "Sierra + Premium",    badge: "premium",   consumo: SILVERADO.consumo_montaña,  precio: 25.20 },
+  ];
+
+  const tbody = document.getElementById("scenariosBody");
+  tbody.innerHTML = escenarios.map(e => {
+    const litros = (distRT * e.consumo) / 100;
+    const costo  = litros * e.precio;
+    const usd    = (costo / TC_USD).toFixed(2);
+    const pct    = ((litros / SILVERADO.tanque) * 100).toFixed(0);
+    const badgeHtml = e.badge
+      ? `<span class="badge badge-${e.badge}">${e.badge.toUpperCase()}</span>`
+      : "";
+    const precioStr = e.precio === precioMagna
+      ? `Magna $${e.precio.toFixed(2)}`
+      : `Premium $${e.precio.toFixed(2)}`;
+    return `
+      <tr>
+        <td>${e.label} ${badgeHtml}<br><span style="font-size:.67rem;color:#475569;">${precioStr}/L</span></td>
+        <td>${e.consumo.toFixed(1)}</td>
+        <td>${litros.toFixed(1)} L</td>
+        <td><span class="cost-mxn">$${costo.toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2})}</span></td>
+        <td><span class="cost-usd">USD ${usd}</span></td>
+        <td>${pct}%</td>
+      </tr>`;
+  }).join("");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRECIO MXN actualizable
+// ─────────────────────────────────────────────────────────────────────────────
+function actualizarPrecio(val) {
+  const v = parseFloat(val);
+  if (!isNaN(v) && v > 0) {
+    precioMagna = v;
+    document.getElementById("preciomagna").textContent = v.toFixed(2);
+    if (distanciaKm) renderEscenarios(distanciaKm * 2);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CALCULAR RUTA
+// ─────────────────────────────────────────────────────────────────────────────
+async function calcularRuta() {
+  const btn = document.getElementById("btnCalc");
+  const progress = document.getElementById("progressBar");
+  btn.disabled = true;
+  btn.textContent = "⏳ Consultando SAKBÉ…";
+  progress.style.width = "30%";
+
+  document.getElementById("apiBadge").className = "api-badge loading";
+  document.getElementById("apiBadge").innerHTML =
+    '<span class="dot gray"></span><span>Consultando API SAKBÉ…</span>';
+
+  let distIda = null, tiempoMin = null, fuenteAPI = false;
+
+  try {
+    progress.style.width = "60%";
+    const data = await consultarSAKBE();
+    const parsed = parseSAKBE(data);
+    if (parsed.distKm && parsed.distKm > 10) {
+      distIda   = parsed.distKm;
+      tiempoMin = parsed.tiempoMin;
+      fuenteAPI = true;
+    } else {
+      throw new Error("Distancia inválida en respuesta");
+    }
+  } catch (err) {
+    console.warn("SAKBÉ API no disponible:", err.message);
+    const linea = haversineKm(ORIGEN.lon, ORIGEN.lat, DESTINO.lon, DESTINO.lat);
+    distIda   = Math.round(linea * 1.42 * 10) / 10;
+    tiempoMin = (distIda / 38) * 60;
+    fuenteAPI = false;
+  }
+
+  progress.style.width = "100%";
+  setTimeout(() => { progress.style.width = "0%"; }, 800);
+
+  renderRuta(distIda, tiempoMin, fuenteAPI);
+
+  btn.disabled = false;
+  btn.innerHTML = "🛰️ Recalcular con SAKBÉ";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+calcularRuta();
+</script>
+
+</body>
+</html>

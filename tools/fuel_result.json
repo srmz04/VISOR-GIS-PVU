@@ -1,0 +1,67 @@
+{
+  "origen": {
+    "nombre": "Victoria de Durango (Ciudad)",
+    "municipio": "Durango",
+    "lon": -104.6532,
+    "lat": 24.0277
+  },
+  "destino": {
+    "nombre": "Huazamotita",
+    "municipio": "Mezquital",
+    "lon": -104.62636777831,
+    "lat": 22.69446222174849,
+    "cvegeo": "100140408"
+  },
+  "vehiculo": {
+    "nombre": "Chevrolet Silverado 1500 2018",
+    "motor": "5.3L V8 EcoTec3 (GasEV)",
+    "traccion": "2WD / 4WD",
+    "consumo_ciudad": 13.8,
+    "consumo_carretera": 10.2,
+    "consumo_combinado": 11.8,
+    "consumo_montaña": 14.5,
+    "combustible": "Gasolina Magna",
+    "tanque_litros": 98
+  },
+  "ruta": {
+    "distancia_km": 210.5,
+    "distancia_m": 210500.0,
+    "tiempo_min": 332.3684210526316,
+    "tiempo_horas": 5.5394736842105265,
+    "estimacion": true
+  },
+  "escenarios": [
+    {
+      "label": "Carretera federal (optimista)",
+      "consumo": 10.2,
+      "precio": 23.5,
+      "litros_rt": 42.94,
+      "costo_rt_mxn": 1009.14
+    },
+    {
+      "label": "Combinado (EPA)",
+      "consumo": 11.8,
+      "precio": 23.5,
+      "litros_rt": 49.68,
+      "costo_rt_mxn": 1167.43
+    },
+    {
+      "label": "Sierra Madre (realista)",
+      "consumo": 14.5,
+      "precio": 23.5,
+      "litros_rt": 61.05,
+      "costo_rt_mxn": 1434.56
+    },
+    {
+      "label": "Sierra + Premium",
+      "consumo": 14.5,
+      "precio": 25.2,
+      "litros_rt": 61.05,
+      "costo_rt_mxn": 1538.33
+    }
+  ],
+  "precios_combustible": {
+    "magna_mxn": 23.5,
+    "premium_mxn": 25.2
+  }
+}

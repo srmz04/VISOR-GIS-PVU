@@ -99,6 +99,25 @@ body {
     transition: all 0.3s;
 }
 
+/* Fuel calculator shortcut button in header */
+.fuel-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    text-decoration: none;
+    color: #fff;
+    margin-left: auto;
+    margin-right: 0.25rem;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+.fuel-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
 /* Sidebar */
 .sidebar {
     position: fixed;
