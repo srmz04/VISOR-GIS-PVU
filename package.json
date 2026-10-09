@@ -1,0 +1,26 @@
+{
+    "name": "pvu-tiles-worker",
+    "version": "1.0.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "start": "ts-node src/server.ts",
+        "dev:node": "ts-node --watch src/server.ts",
+        "build:node": "tsc",
+        "dev:worker": "wrangler dev",
+        "deploy:worker": "wrangler deploy --minify",
+        "deploy:dry-run": "wrangler deploy --dry-run"
+    },
+    "dependencies": {
+        "@hono/node-server": "2.1.4",
+        "hono": "4.13.13",
+        "pmtiles": "4.5.0"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "5.20261009.1",
+        "@types/node": "26.6.4",
+        "ts-node": "10.9.2",
+        "typescript": "7.0.2",
+        "wrangler": "4.149.0"
+    }
+}
