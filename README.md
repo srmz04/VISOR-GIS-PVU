@@ -11,7 +11,7 @@ Sistema WebGIS para visualización y análisis de responsabilidades de vacunaci�
 
 ## Demo
 
-**Versión en línea:** [https://main.pvu-webgis-2025.pages.dev](https://main.pvu-webgis-2025.pages.dev)
+**Versión en línea:** [https://b4b70da6.visor-gis-pvu-ui-test.pages.dev/)
 
 **Tile Server (Health Check):** [https://pvu-tiles-worker.xtrctr.workers.dev/health](https://pvu-tiles-worker.xtrctr.workers.dev/health)
 
